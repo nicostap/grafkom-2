@@ -72,8 +72,8 @@ abstract class Character {
 }
 
 export class Clown extends Character {
-    vx = 0;
-    vz = 0;
+    v = 0;
+    angle = 0;
     playerSpeed = 2;
 
     constructor(scene: THREE.Scene) {
@@ -87,31 +87,22 @@ export class Clown extends Character {
 
     run(dt: number, keyPressed: { [key: string]: boolean }) {
         super.run(dt, keyPressed);
-        let v = Math.hypot(this.vx, this.vz) * this.playerSpeed;
-        this.vx;
-        this.vz;
-        if(v != 0) this.object?.lookAt(this.object?.position.x + this.vx, 0, this.object?.position.z + this.vz);
-        this.object?.position.add(new THREE.Vector3(this.playerSpeed * this.vx, 0, this.playerSpeed * this.vz));
+        this.object?.rotation.set(0, this.angle, 0);
+        this.object?.position.add(new THREE.Vector3(this.playerSpeed * this.v * Math.sin(this.angle), 0, this.playerSpeed * this.v * Math.cos(this.angle)));
 
-        if (v == 0) this.crossFade(this.currentState, 'Idle', 0.1);
-        else if (v < 3) this.crossFade(this.currentState, 'Walking', 0.1);
+        if (this.v == 0) this.crossFade(this.currentState, 'Idle', 0.1);
+        else if (this.playerSpeed == 2) this.crossFade(this.currentState, 'Walking', 0.1);
         else this.crossFade(this.currentState, 'Running', 0.1);
 
         if (keyPressed['w']) {
-            this.vz = 1;
+            this.v = 1;
+        } else {
+            this.v = 0;
         }
         if (keyPressed['a']) {
-            this.vx = 1;
-        }
-        if (keyPressed['s']) {
-            this.vz = -1;
-        }
-        if (keyPressed['d']) {
-            this.vx = -1;
-        }
-        if(!keyPressed['w'] && !keyPressed['a'] && !keyPressed['s'] && !keyPressed['d']) {
-            this.vx = 0;
-            this.vz = 0;
+            this.angle += 3 * Math.PI / 180;
+        } else if (keyPressed['d']) {
+            this.angle -= 3 * Math.PI / 180;
         }
         if(keyPressed[' ']) {
             this.playerSpeed = 4;
