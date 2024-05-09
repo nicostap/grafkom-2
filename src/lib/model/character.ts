@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { FBXLoader } from "three/examples/jsm/Addons.js";
 
 abstract class Character {
-    static loader = new FBXLoader();
-    static onProgress = function (xhr: any) {
+    loader = new FBXLoader();
+    onProgress = function (xhr: any) {
         if (xhr.lengthComputable) {
             let percentComplete = xhr.loaded / xhr.total * 100;
             console.log(percentComplete.toFixed(2) + '% downloaded');
@@ -20,7 +20,7 @@ abstract class Character {
     }
 
     loadObjectFBX(scene: THREE.Scene, url: string) {
-        Character.loader.load(url, (object) => {
+        this.loader.load(url, (object) => {
             this.mixer = new THREE.AnimationMixer(object);
             object.traverse(function (child) {
                 if ((<THREE.Mesh>child).isMesh) {
@@ -30,18 +30,18 @@ abstract class Character {
             });
             scene.add(object);
             this.object = object;
-        }, Character.onProgress);
+        }, this.onProgress);
     }
 
     loadAnimationFBX(state: string, url: string) {
         if (typeof this.mixer !== "undefined") {
-            Character.loader.load(url, (object) => {
+            this.loader.load(url, (object) => {
                 const action = this.mixer!.clipAction(object.animations[0]);
                 action.clampWhenFinished = true;
                 action.play();
                 this.actions[state] = action;
                 this.#setWeight(state, 0);
-            }, Character.onProgress);
+            }, this.onProgress);
         }
         else setTimeout(() => { this.loadAnimationFBX(state, url) }, 250);
     }
@@ -101,13 +101,23 @@ export class Clown extends Character {
         }
         if (keyPressed['a']) {
             this.angle += 3 * Math.PI / 180;
-        } else if (keyPressed['d']) {
+        }
+        if (keyPressed['d']) {
             this.angle -= 3 * Math.PI / 180;
         }
         if(keyPressed[' ']) {
-            this.playerSpeed = 4;
+            this.playerSpeed = 6;
         } else {
             this.playerSpeed = 2;
         }
+    }
+}
+
+export class Victim extends Character {
+    constructor(scene: THREE.Scene) {
+        super();
+        this.loadObjectFBX(scene, './assets/victimIdle.fbx');
+        this.loadAnimationFBX('Idle', './assets/victimIdle.fbx');
+        this.setInitState('Idle');
     }
 }
