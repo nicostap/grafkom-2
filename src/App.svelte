@@ -3,6 +3,11 @@
     import { renderMain } from "./lib/main";
 
   onMount(() => {
-    renderMain();
+    const renderTerminate = renderMain();
+    return () => {
+      if (renderTerminate) {
+        renderTerminate();
+      }
+    };
   });
 </script>
