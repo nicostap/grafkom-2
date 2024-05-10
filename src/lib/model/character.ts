@@ -11,12 +11,12 @@ abstract class Character {
     };
 
     object: THREE.Group<THREE.Object3DEventMap> | undefined;
-    collisionBox: THREE.Box3 | undefined;
+    collisionSphere: THREE.Sphere | undefined;
     mixer: THREE.AnimationMixer | undefined;
     actions: { [state: string]: THREE.AnimationAction } = {};
     currentState = '';
 
-    run(dt: number, keyPressed: { [key: string]: boolean }) {
+    run(dt: number, collisionTargets: THREE.Box3[], keyPressed: { [key: string]: boolean }) {
         this.mixer?.update(dt);
     }
 
@@ -76,6 +76,7 @@ export class Clown extends Character {
     v = 0;
     angle = 0;
     playerSpeed = 2;
+    sight = new THREE.Raycaster();
 
     constructor(scene: THREE.Scene) {
         super();
@@ -84,17 +85,30 @@ export class Clown extends Character {
         this.loadAnimationFBX('Running', './assets/clownRunning.fbx');
         this.loadAnimationFBX('Walking', './assets/clownWalking.fbx');
         this.setInitState('Idle');
+        this.sight.far = 800;
     }
 
-    run(dt: number, keyPressed: { [key: string]: boolean }) {
-        super.run(dt, keyPressed);
+    run(dt: number, collisionTargets: THREE.Box3[], keyPressed: { [key: string]: boolean }) {
+        if(this.object)
+        this.sight.set(
+            this.object?.position,
+            new THREE.Vector3(Math.sin(this.angle), 0, Math.cos(this.angle)).normalize()
+        );
+
+        let prev_position = this.object?.position.clone();
+        super.run(dt, collisionTargets, keyPressed);
         this.object?.rotation.set(0, this.angle, 0);
         this.object?.position.add(new THREE.Vector3(this.playerSpeed * this.v * Math.sin(this.angle), 0, this.playerSpeed * this.v * Math.cos(this.angle)));
-        this.collisionBox = new THREE.Box3().setFromPoints([
-            new THREE.Vector3(this.object!.position.x - 40, this.object!.position.y - 1, this.object!.position.z - 40),
-            new THREE.Vector3(this.object!.position.x + 40, this.object!.position.y + 1, this.object!.position.z + 40),
-        ]);
         
+        if(prev_position)
+        for (let collisionTarget of collisionTargets) {
+            if (this.collisionSphere?.intersectsBox(collisionTarget)) {
+                this.object?.position.set(prev_position?.x, prev_position?.y, prev_position?.z);
+            }
+        }
+        
+        this.collisionSphere = new THREE.Sphere(this.object?.position, 40);
+
         if (this.v == 0) this.crossFade(this.currentState, 'Idle', 0.1);
         else if (this.playerSpeed == 2) this.crossFade(this.currentState, 'Walking', 0.1);
         else this.crossFade(this.currentState, 'Running', 0.1);
@@ -115,6 +129,12 @@ export class Clown extends Character {
         } else {
             this.playerSpeed = 2;
         }
+    }
+
+    getDistanceToWall( walls: THREE.Object3D[] ) {
+        const intersects = this.sight.intersectObjects(walls);
+        if(intersects.length == 0) return this.sight.far;
+        return intersects[0].distance;
     }
 }
 
