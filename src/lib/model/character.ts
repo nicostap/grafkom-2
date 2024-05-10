@@ -6,11 +6,12 @@ abstract class Character {
     onProgress = function (xhr: any) {
         if (xhr.lengthComputable) {
             let percentComplete = xhr.loaded / xhr.total * 100;
-            console.log(percentComplete.toFixed(2) + '% downloaded');
+            // console.log(percentComplete.toFixed(2) + '% downloaded');
         }
     };
 
     object: THREE.Group<THREE.Object3DEventMap> | undefined;
+    collisionBox: THREE.Box3 | undefined;
     mixer: THREE.AnimationMixer | undefined;
     actions: { [state: string]: THREE.AnimationAction } = {};
     currentState = '';
@@ -89,7 +90,11 @@ export class Clown extends Character {
         super.run(dt, keyPressed);
         this.object?.rotation.set(0, this.angle, 0);
         this.object?.position.add(new THREE.Vector3(this.playerSpeed * this.v * Math.sin(this.angle), 0, this.playerSpeed * this.v * Math.cos(this.angle)));
-
+        this.collisionBox = new THREE.Box3().setFromPoints([
+            new THREE.Vector3(this.object!.position.x - 40, this.object!.position.y - 1, this.object!.position.z - 40),
+            new THREE.Vector3(this.object!.position.x + 40, this.object!.position.y + 1, this.object!.position.z + 40),
+        ]);
+        
         if (this.v == 0) this.crossFade(this.currentState, 'Idle', 0.1);
         else if (this.playerSpeed == 2) this.crossFade(this.currentState, 'Walking', 0.1);
         else this.crossFade(this.currentState, 'Running', 0.1);

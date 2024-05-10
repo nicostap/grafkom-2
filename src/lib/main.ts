@@ -13,8 +13,6 @@ export function renderMain() {
 
     // Clown
     let clown = new Clown(scene);
-    // Victim
-    let victim = new Victim(scene);
 
     // Map
     let map = [
@@ -29,25 +27,28 @@ export function renderMain() {
         [0, 0, 0, 0, 0, 0, 0, 0, 0],
     ];
     const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load('./assets/cobblestone/7_diffuseOriginal.bmp');
-    const displacement = textureLoader.load('./assets/cobblestone/7_height.bmp');
-    const normal = textureLoader.load('./assets/cobblestone/7_normal.bmp');
+    const texture = textureLoader.load('./assets/wallpaper/floor.jpg');
+    const displacement = textureLoader.load('./assets/cobblestone/floor_displace.jpg');
+    const wallpaperTexture = textureLoader.load('./assets/wallpaper/texture.jpg');
+    const wallpaperNormalTexture = textureLoader.load('./assets/wallpaper/texture.png');
+    const wallCollisionBoxes: THREE.Box3[] = [];
     for (let i = 0; i < map.length; i++) {
         for (let j = 0; j < map[i].length; j++) {
             if (map[i][j] == 0) {
                 // Wall
                 const mesh = new THREE.Mesh(
                     new THREE.BoxGeometry(500, 500, 500, 50, 50),
-                    new THREE.MeshPhongMaterial({ color: 0x999999, map: texture, displacementMap: displacement, normalMap: normal })
+                    new THREE.MeshPhongMaterial({ color: 0x999999, map: wallpaperTexture, normalMap: wallpaperNormalTexture})
                 );
                 mesh.position.set(i * 500 - 500, 250, j * 500 - 500);
+                wallCollisionBoxes.push(new THREE.Box3().setFromObject(mesh));
                 scene.add(mesh);
             }
             else if (map[i][j] == 1) {
                 // Floor
                 let mesh = new THREE.Mesh(
                     new THREE.PlaneGeometry(500, 500, 5, 5),
-                    new THREE.MeshPhongMaterial({ color: 0x999999, map: texture, displacementMap: displacement, normalMap: normal })
+                    new THREE.MeshPhongMaterial({ color: 0x999999, map: texture, displacementMap: displacement})
                 );
                 mesh.position.set(i * 500 - 500, 0, j * 500 - 500);
                 mesh.rotation.x = -Math.PI / 2;
@@ -56,7 +57,7 @@ export function renderMain() {
                 // Ceiling
                 mesh = new THREE.Mesh(
                     new THREE.PlaneGeometry(500, 500, 5, 5),
-                    new THREE.MeshPhongMaterial({ color: 0x999999, map: texture, displacementMap: displacement, normalMap: normal })
+                    new THREE.MeshPhongMaterial({ color: 0x999999, map: texture, displacementMap: displacement})
                 );
                 mesh.position.set(i * 500 - 500, 500, j * 500 - 500);
                 mesh.rotation.x = Math.PI / 2;
@@ -69,10 +70,10 @@ export function renderMain() {
     const pLight = new THREE.PointLight(0xffffff, 100000);
     pLight.castShadow = true;
     // Set up shadow properties for the light
-    pLight.shadow.mapSize.width = 1024; // default
-    pLight.shadow.mapSize.height = 1024; // default
-    pLight.shadow.camera.near = 0.5; // default
-    pLight.shadow.camera.far = 450; // default
+    pLight.shadow.mapSize.width = 1024;
+    pLight.shadow.mapSize.height = 1024;
+    pLight.shadow.camera.near = 0.5; 
+    pLight.shadow.camera.far = 450;
     scene.add(pLight);
 
     // Input
@@ -94,10 +95,17 @@ export function renderMain() {
             time_prev = time;
 
             // Clown
-            clown.run(dt, input.keyPressed);
             if (clown.object) {
+                let prev_x = clown.object?.position.x;
+                let prev_z = clown.object?.position.z;
+                clown.run(dt, input.keyPressed);
+                for(let wallCollisionBox of wallCollisionBoxes) {
+                    if(clown.collisionBox?.intersectsBox(wallCollisionBox)) {
+                        clown.object!.position.x = prev_x;
+                        clown.object!.position.z = prev_z;
+                    }
+                }
                 pLight.position.set(clown.object.position.x, 400, clown.object.position.z);
-
                 if (input.keyPressed['q']) cameraAngle += 3 * Math.PI / 180;
                 if (input.keyPressed['e']) cameraAngle -= 3 * Math.PI / 180;
                 camera.position.set(
@@ -107,8 +115,6 @@ export function renderMain() {
                 );
                 camera.lookAt(clown.object.position.x, 150, clown.object.position.z);
             }
-            // Victim
-            victim.run(dt, input.keyPressed);
 
             // Drawing scene
             renderer.render(scene, camera);
