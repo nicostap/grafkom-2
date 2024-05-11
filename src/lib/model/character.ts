@@ -58,7 +58,7 @@ abstract class Character {
     // For Switching Animations
     crossFade(startAction: string, endAction: string, duration: number) {
         if (startAction == endAction) return;
-        if(!this.actions[startAction] || !this.actions[endAction]) return;
+        if (!this.actions[startAction] || !this.actions[endAction]) return;
 
         this.currentState = endAction;
         this.#setWeight(endAction, 1);
@@ -76,7 +76,9 @@ export class Clown extends Character {
     v = 0;
     angle = 0;
     playerSpeed = 2;
-    sight = new THREE.Raycaster();
+    sight: any = new THREE.Raycaster();
+    sightLeft: any = new THREE.Raycaster();
+    sightRight: any = new THREE.Raycaster();
 
     constructor(scene: THREE.Scene) {
         super();
@@ -86,27 +88,38 @@ export class Clown extends Character {
         this.loadAnimationFBX('Walking', './assets/clownWalking.fbx');
         this.setInitState('Idle');
         this.sight.far = 800;
+        this.sightLeft.far = 800;
+        this.sightRight.far = 800;
+        this.sight.firstHitOnly = true;
+        this.sightLeft.firstHitOnly = true;
+        this.sightRight.firstHitOnly = true;
+        this.sight.set(
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(Math.sin(this.angle), 0, Math.cos(this.angle)).normalize()
+        );
+        this.sightLeft.set(
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(Math.sin(this.angle - Math.PI / 6), 0, Math.cos(this.angle - Math.PI / 6)).normalize()
+        );
+        this.sightRight.set(
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(Math.sin(this.angle + Math.PI / 6), 0, Math.cos(this.angle + Math.PI / 6)).normalize()
+        );
     }
 
     run(dt: number, collisionTargets: THREE.Box3[], keyPressed: { [key: string]: boolean }) {
-        if(this.object)
-        this.sight.set(
-            this.object?.position,
-            new THREE.Vector3(Math.sin(this.angle), 0, Math.cos(this.angle)).normalize()
-        );
-
         let prev_position = this.object?.position.clone();
         super.run(dt, collisionTargets, keyPressed);
         this.object?.rotation.set(0, this.angle, 0);
-        this.object?.position.add(new THREE.Vector3(this.playerSpeed * this.v * Math.sin(this.angle), 0, this.playerSpeed * this.v * Math.cos(this.angle)));
-        
-        if(prev_position)
-        for (let collisionTarget of collisionTargets) {
-            if (this.collisionSphere?.intersectsBox(collisionTarget)) {
-                this.object?.position.set(prev_position?.x, prev_position?.y, prev_position?.z);
+        this.object?.position.add(new THREE.Vector3((dt / 0.016) * this.playerSpeed * this.v * Math.sin(this.angle), 0, (dt / 0.016) * this.playerSpeed * this.v * Math.cos(this.angle)));
+
+        if (prev_position)
+            for (let collisionTarget of collisionTargets) {
+                if (this.collisionSphere?.intersectsBox(collisionTarget)) {
+                    this.object?.position.set(prev_position?.x, prev_position?.y, prev_position?.z);
+                }
             }
-        }
-        
+
         this.collisionSphere = new THREE.Sphere(this.object?.position, 40);
 
         if (this.v == 0) this.crossFade(this.currentState, 'Idle', 0.1);
@@ -119,30 +132,42 @@ export class Clown extends Character {
             this.v = 0;
         }
         if (keyPressed['a']) {
-            this.angle += 3 * Math.PI / 180;
+            this.angle += (dt / 0.016) * 3 * Math.PI / 180;
         }
         if (keyPressed['d']) {
-            this.angle -= 3 * Math.PI / 180;
+            this.angle -= (dt / 0.016) * 3 * Math.PI / 180;
         }
-        if(keyPressed[' ']) {
+        if (keyPressed[' ']) {
             this.playerSpeed = 6;
         } else {
             this.playerSpeed = 2;
         }
     }
 
-    getDistanceToWall( walls: THREE.Object3D[] ) {
-        const intersects = this.sight.intersectObjects(walls);
-        if(intersects.length == 0) return this.sight.far;
-        return intersects[0].distance;
-    }
-}
+    getDistanceToWall(walls: THREE.Object3D[]) {
+        this.sight.set(
+            this.object!.position,
+            new THREE.Vector3(Math.sin(this.angle), 0, Math.cos(this.angle)).normalize()
+        );
+        this.sightLeft.set(
+            this.object!.position,
+            new THREE.Vector3(Math.sin(this.angle - Math.PI / 6), 0, Math.cos(this.angle - Math.PI / 6)).normalize()
+        );
+        this.sightRight.set(
+            this.object!.position,
+            new THREE.Vector3(Math.sin(this.angle + Math.PI / 6), 0, Math.cos(this.angle + Math.PI / 6)).normalize()
+        );
 
-export class Victim extends Character {
-    constructor(scene: THREE.Scene) {
-        super();
-        this.loadObjectFBX(scene, './assets/victimIdle.fbx');
-        this.loadAnimationFBX('Idle', './assets/victimIdle.fbx');
-        this.setInitState('Idle');
+        let results = [];
+        let intersects = this.sightLeft.intersectObjects(walls);
+        if(intersects.length == 0) results.push(this.sightLeft.far);
+        else results.push(intersects[0].distance);
+        intersects = this.sight.intersectObjects(walls);
+        if(intersects.length == 0) results.push(this.sight.far);
+        else results.push(intersects[0].distance);
+        intersects = this.sightRight.intersectObjects(walls);
+        if(intersects.length == 0) results.push(this.sightRight.far);
+        else results.push(intersects[0].distance);
+        return results;
     }
 }

@@ -3,6 +3,19 @@ import { Clown } from './model/character';
 import { Input } from './input';
 import { NEAT, activation, crossover, mutate } from './neural/NEAT';
 import { AI } from './model/ai';
+import { MeshBVH } from 'three-mesh-bvh';
+import { acceleratedRaycast } from "three-mesh-bvh";
+
+THREE.Mesh.prototype.raycast = acceleratedRaycast;
+
+class BoundedGeometry extends THREE.BufferGeometry {
+    boundsTree: any;
+    constructor(bg: THREE.BufferGeometry) {
+        super();
+        this.copy(bg);
+        this.boundsTree = new MeshBVH(this as THREE.BufferGeometry);
+    };
+}
 
 export function renderMain() {
     // Initial Set Up
@@ -39,8 +52,9 @@ export function renderMain() {
         for (let j = 0; j < map[i].length; j++) {
             if (map[i][j] == 0) {
                 // Wall
+                const boundedWallGeometry = new BoundedGeometry(new THREE.BoxGeometry(500, 500, 500, 50, 50));
                 const mesh = new THREE.Mesh(
-                    new THREE.BoxGeometry(500, 500, 500, 50, 50),
+                    boundedWallGeometry,
                     new THREE.MeshPhongMaterial({ color: 0x999999, map: wallpaperTexture, normalMap: wallpaperNormalTexture })
                 );
                 mesh.position.set(i * 500 - 500, 250, j * 500 - 500);
@@ -84,19 +98,19 @@ export function renderMain() {
     const input = new Input();
 
     // Helper
-    var helper = new THREE.CameraHelper(pLight.shadow.camera);
-    scene.add(helper);
+    // var helper = new THREE.CameraHelper(pLight.shadow.camera);
+    // scene.add(helper);
 
     // Neural
     let config = {
         model: [
-            { nodeCount: 6, type: "input" },
+            { nodeCount: 8, type: "input" },
             { nodeCount: 16, type: "output", activationfunc: activation.RELU }
         ],
         mutationRate: 0.05,
         crossoverMethod: crossover.RANDOM,
         mutationMethod: mutate.RANDOM,
-        populationSize: 5
+        populationSize: 50
     };
     let neat = new NEAT(config);
 
@@ -112,7 +126,6 @@ export function renderMain() {
     let isFirstGenDone = false;
     const interval = setInterval(() => {
         for(let i = 0; i < neat.populationSize; i++) {
-            monsters[i].score = 1 / (monsters[i].position.distanceTo(target) + samePosition[i] * 100);
             neat.setFitness(monsters[i].score, i);
             monsters[i].reset(
                 clown.object!.position.x,
@@ -124,24 +137,39 @@ export function renderMain() {
         }
         neat.doGen();
         isFirstGenDone = true;
-    }, 10000);
+    }, 30000);
 
     // Animation
     let target = new THREE.Vector3(3000, 0, 3000);
     let isTerminated = false;
     let cameraAngle = 0;
+    const arrow = new THREE.ArrowHelper( clown.sight.ray.direction, clown.sight.ray.origin, 800, 0xff0000 );
+    const arrowLeft = new THREE.ArrowHelper( clown.sightLeft.ray.direction, clown.sight.ray.origin, 800, 0xff0000 );
+    const arrowRight = new THREE.ArrowHelper( clown.sightRight.ray.direction, clown.sight.ray.origin, 800, 0xff0000 );
+    scene.add(arrow);
+    scene.add(arrowLeft);
+    scene.add(arrowRight);
     {
         var time_prev = 0;
         function animate(time: number) {
+            // Time
+            var dt = time - time_prev;
+            dt *= 0.001;
+            time_prev = time;
+            
             // AI
+            // console.time('Neural');
             for(let i = 0; i < neat.populationSize; i++) {
+                let sightResult = monsters[i].getDistanceToWall(walls);
                 neat.setInputs([
                     NEAT.mapNumber(monsters[i].position.x, -250, 3250),
                     NEAT.mapNumber(monsters[i].position.z, -250, 3250),
                     NEAT.mapNumber(monsters[i].angle % 2 * Math.PI, 0, 2 * Math.PI),
                     NEAT.mapNumber(target.x, -250, 3250),
                     NEAT.mapNumber(target.z, -250, 3250),
-                    NEAT.mapNumber(monsters[i].getDistanceToWall(walls), 0, monsters[i].sight.far),
+                    NEAT.mapNumber(sightResult[0], 0, monsters[i].sightLeft.far),
+                    NEAT.mapNumber(sightResult[1], 0, monsters[i].sight.far),
+                    NEAT.mapNumber(sightResult[2], 0, monsters[i].sightRight.far),
                 ], i);
             }
             neat.feedForward();
@@ -155,27 +183,28 @@ export function renderMain() {
                     ' ': input[3] == '1',
                 }
                 const prev_position = monsters[i].position.clone();
-                monsters[i].run(wallCollisionBoxes, inputPressed);
+                monsters[i].run(dt, wallCollisionBoxes, inputPressed);
                 if(monsters[i].position.equals(prev_position)) samePosition[i]++;
                 else samePosition[i] = 0;
+                monsters[i].score = 1 / (monsters[i].position.distanceTo(target));
+                monsters[i].score -= 0.01 * samePosition[i];
             }
-
-            // Time
-            var dt = time - time_prev;
-            dt *= 0.001;
-            time_prev = time;
+            // console.timeEnd('Neural');
 
             // Clown
             if (clown.object) {
                 if(isFirstGenDone) {
                     const bestCreature = neat.bestCreature();
+                    let sightResult = clown.getDistanceToWall(walls);
                     bestCreature.setInputs([
                         NEAT.mapNumber(clown.object.position.x, -250, 3250),
                         NEAT.mapNumber(clown.object.position.z, -250, 3250),
                         NEAT.mapNumber(clown.angle % 2 * Math.PI, 0, 2 * Math.PI),
                         NEAT.mapNumber(target.x, -250, 3250),
                         NEAT.mapNumber(target.z, -250, 3250),
-                        NEAT.mapNumber(clown.getDistanceToWall(walls), 0, clown.sight.far),
+                        NEAT.mapNumber(sightResult[0], 0, clown.sightLeft.far),
+                        NEAT.mapNumber(sightResult[1], 0, clown.sight.far),
+                        NEAT.mapNumber(sightResult[2], 0, clown.sightRight.far),
                     ]);
                     bestCreature.feedForward();
                     const input = bestCreature.decision().toString(2).padStart(4, '0');
@@ -185,8 +214,21 @@ export function renderMain() {
                         'd': input[2] == '1',
                         ' ': input[3] == '1',
                     }
+                    arrow.position.set(clown.sight.ray.origin.x, clown.sight.ray.origin.y, clown.sight.ray.origin.z);
+                    arrowLeft.position.set(clown.sight.ray.origin.x, clown.sight.ray.origin.y, clown.sight.ray.origin.z);
+                    arrowRight.position.set(clown.sight.ray.origin.x, clown.sight.ray.origin.y, clown.sight.ray.origin.z);
+                    arrow.setDirection(clown.sight.ray.direction);
+                    arrowLeft.setDirection(clown.sightLeft.ray.direction);
+                    arrowRight.setDirection(clown.sightRight.ray.direction);
                     clown.run(dt, wallCollisionBoxes, inputPressed);
                 } else {
+                    // console.log(clown.getDistanceToWall(walls));
+                    // arrow.position.set(clown.sight.ray.origin.x, clown.sight.ray.origin.y, clown.sight.ray.origin.z);
+                    // arrowLeft.position.set(clown.sight.ray.origin.x, clown.sight.ray.origin.y, clown.sight.ray.origin.z);
+                    // arrowRight.position.set(clown.sight.ray.origin.x, clown.sight.ray.origin.y, clown.sight.ray.origin.z);
+                    // arrow.setDirection(clown.sight.ray.direction);
+                    // arrowLeft.setDirection(clown.sightLeft.ray.direction);
+                    // arrowRight.setDirection(clown.sightRight.ray.direction);
                     clown.run(dt, wallCollisionBoxes, input.keyPressed);
                 }
                 pLight.position.set(clown.object.position.x, 400, clown.object.position.z);
@@ -202,9 +244,9 @@ export function renderMain() {
 
             if(input.keyPressed['s']) console.log(neat.export());
 
-            // Drawing scene
+            // Drawing scene   
             renderer.render(scene, camera);
-            requestAnimationFrame(animate);
+            requestAnimationFrame( animate );
         }
         requestAnimationFrame(animate);
     }
