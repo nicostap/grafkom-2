@@ -5,6 +5,8 @@ import { NEAT, activation, crossover, mutate } from './neural/NEAT';
 import { AI } from './model/ai';
 import { MeshBVH } from 'three-mesh-bvh';
 import { acceleratedRaycast } from "three-mesh-bvh";
+import type Creature from './neural/Creature';
+import data from './modelNeural/model';
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
@@ -97,55 +99,75 @@ export function renderMain() {
     // Input
     const input = new Input();
 
-    // Helper
-    // var helper = new THREE.CameraHelper(pLight.shadow.camera);
-    // scene.add(helper);
-
     // Neural
-    let config = {
-        model: [
-            { nodeCount: 8, type: "input" },
-            { nodeCount: 16, type: "output", activationfunc: activation.RELU }
-        ],
-        mutationRate: 0.05,
-        crossoverMethod: crossover.RANDOM,
-        mutationMethod: mutate.RANDOM,
-        populationSize: 50
-    };
-    let neat = new NEAT(config);
-
-    // Neural AI
-    let monsters: AI[] = [];
-    let samePosition: number[] = [];
-    for(let i = 0; i < neat.populationSize; i++) {
-        monsters.push(new AI());
-        samePosition.push(0);
+    let neat: NEAT;
+    try {
+        let config = {
+            model: [
+                { nodeCount: 8, type: "input" },
+                { nodeCount: 16, type: "output", activationfunc: activation.SIGMOID }
+            ],
+            mutationRate: 0.15,
+            crossoverMethod: crossover.SLICE,
+            mutationMethod: mutate.RANDOM,
+            populationSize: 1
+        };
+        neat = new NEAT(config);
+        neat.import(data);
+        console.log(neat.populationSize);
+    } catch (e) {
+        console.log(e);
+        console.log("No imported model found");
+        let config = {
+            model: [
+                { nodeCount: 8, type: "input" },
+                { nodeCount: 16, type: "output", activationfunc: activation.RELU }
+            ],
+            mutationRate: 0.05,
+            crossoverMethod: crossover.SLICE,
+            mutationMethod: mutate.RANDOM,
+            populationSize: 250
+        };
+        neat = new NEAT(config);
     }
 
-    // Interval of generations
+    // Neural Set Up
+    let monsters: AI[] = [];
+    let samePosition: number[] = [];
+    for (let i = 0; i < neat.populationSize; i++) {
+        monsters.push(new AI(scene));
+        samePosition.push(1);
+    }
+
+    // Neural
+    let target = new THREE.Vector3(3000, 0, 3000);
+    let origin = new THREE.Vector3(0, 0, 0);
+    let originAngle = 0;
+    let bestCreature: Creature;
     let isFirstGenDone = false;
     const interval = setInterval(() => {
-        for(let i = 0; i < neat.populationSize; i++) {
+        let aliveCount = 0;
+        for (let i = 0; i < neat.populationSize; i++) {
+            if (monsters[i].isAlive) aliveCount++;
+            else monsters[i].score *= 0.5;
             neat.setFitness(monsters[i].score, i);
-            monsters[i].reset(
-                clown.object!.position.x,
-                clown.object!.position.y,
-                clown.object!.position.z,
-                clown.angle
-            );
-            samePosition[i] = 0;
+            monsters[i].reset(...origin.toArray(), originAngle);
+            clown.object?.position.set(...origin.toArray());
+            clown.angle = originAngle;
         }
         neat.doGen();
+        bestCreature = neat.bestCreature;
+        console.log(bestCreature.score);
+        console.log(aliveCount);
         isFirstGenDone = true;
-    }, 30000);
+    }, 20000);
 
     // Animation
-    let target = new THREE.Vector3(3000, 0, 3000);
     let isTerminated = false;
     let cameraAngle = 0;
-    const arrow = new THREE.ArrowHelper( clown.sight.ray.direction, clown.sight.ray.origin, 800, 0xff0000 );
-    const arrowLeft = new THREE.ArrowHelper( clown.sightLeft.ray.direction, clown.sight.ray.origin, 800, 0xff0000 );
-    const arrowRight = new THREE.ArrowHelper( clown.sightRight.ray.direction, clown.sight.ray.origin, 800, 0xff0000 );
+    const arrow = new THREE.ArrowHelper(clown.sight.ray.direction, clown.sight.ray.origin, 800, 0xff0000);
+    const arrowLeft = new THREE.ArrowHelper(clown.sightLeft.ray.direction, clown.sight.ray.origin, 800, 0xff0000);
+    const arrowRight = new THREE.ArrowHelper(clown.sightRight.ray.direction, clown.sight.ray.origin, 800, 0xff0000);
     scene.add(arrow);
     scene.add(arrowLeft);
     scene.add(arrowRight);
@@ -156,25 +178,27 @@ export function renderMain() {
             var dt = time - time_prev;
             dt *= 0.001;
             time_prev = time;
-            
+
             // AI
-            // console.time('Neural');
-            for(let i = 0; i < neat.populationSize; i++) {
+            for (let i = 0; i < neat.populationSize; i++) {
+                if (!monsters[i].isAlive) continue;
                 let sightResult = monsters[i].getDistanceToWall(walls);
                 neat.setInputs([
                     NEAT.mapNumber(monsters[i].position.x, -250, 3250),
                     NEAT.mapNumber(monsters[i].position.z, -250, 3250),
-                    NEAT.mapNumber(monsters[i].angle % 2 * Math.PI, 0, 2 * Math.PI),
+                    NEAT.mapNumber(monsters[i].angle % (2 * Math.PI), 0, 2 * Math.PI),
                     NEAT.mapNumber(target.x, -250, 3250),
                     NEAT.mapNumber(target.z, -250, 3250),
-                    NEAT.mapNumber(sightResult[0], 0, monsters[i].sightLeft.far),
-                    NEAT.mapNumber(sightResult[1], 0, monsters[i].sight.far),
-                    NEAT.mapNumber(sightResult[2], 0, monsters[i].sightRight.far),
+                    NEAT.mapNumber(sightResult[0], 30, monsters[i].sightLeft.far),
+                    NEAT.mapNumber(sightResult[1], 30, monsters[i].sight.far),
+                    NEAT.mapNumber(sightResult[2], 30, monsters[i].sightRight.far),
                 ], i);
             }
             neat.feedForward();
             const decisions = neat.getDecisions();
-            for(let i = 0; i < neat.populationSize; i++) {
+            for (let i = 0; i < neat.populationSize; i++) {
+                if (!monsters[i].isAlive) continue;
+                const prev_position = monsters[i].position.clone();
                 const input = decisions[i].toString(2).padStart(4, '0');
                 const inputPressed = {
                     'w': input[0] == '1',
@@ -182,29 +206,24 @@ export function renderMain() {
                     'd': input[2] == '1',
                     ' ': input[3] == '1',
                 }
-                const prev_position = monsters[i].position.clone();
                 monsters[i].run(dt, wallCollisionBoxes, inputPressed);
-                if(monsters[i].position.equals(prev_position)) samePosition[i]++;
-                else samePosition[i] = 0;
-                monsters[i].score = 1 / (monsters[i].position.distanceTo(target));
-                monsters[i].score -= 0.01 * samePosition[i];
+                if(prev_position.equals(monsters[i].position)) samePosition[i] += 5;
+                else samePosition[i] = 1;
+                monsters[i].score += 20 / (samePosition[i] * monsters[i].position.distanceTo(target));
             }
-            // console.timeEnd('Neural');
-
             // Clown
             if (clown.object) {
-                if(isFirstGenDone) {
-                    const bestCreature = neat.bestCreature();
+                if (isFirstGenDone) {
                     let sightResult = clown.getDistanceToWall(walls);
                     bestCreature.setInputs([
                         NEAT.mapNumber(clown.object.position.x, -250, 3250),
                         NEAT.mapNumber(clown.object.position.z, -250, 3250),
-                        NEAT.mapNumber(clown.angle % 2 * Math.PI, 0, 2 * Math.PI),
+                        NEAT.mapNumber(clown.angle % (2 * Math.PI), 0, 2 * Math.PI),
                         NEAT.mapNumber(target.x, -250, 3250),
                         NEAT.mapNumber(target.z, -250, 3250),
-                        NEAT.mapNumber(sightResult[0], 0, clown.sightLeft.far),
-                        NEAT.mapNumber(sightResult[1], 0, clown.sight.far),
-                        NEAT.mapNumber(sightResult[2], 0, clown.sightRight.far),
+                        NEAT.mapNumber(sightResult[0], 30, clown.sightLeft.far),
+                        NEAT.mapNumber(sightResult[1], 30, clown.sight.far),
+                        NEAT.mapNumber(sightResult[2], 30, clown.sightRight.far),
                     ]);
                     bestCreature.feedForward();
                     const input = bestCreature.decision().toString(2).padStart(4, '0');
@@ -242,18 +261,18 @@ export function renderMain() {
                 camera.lookAt(clown.object.position.x, 150, clown.object.position.z);
             }
 
-            if(input.keyPressed['s']) console.log(neat.export());
+            if (input.keyPressed['s']) console.log(neat.export());
 
             // Drawing scene   
             renderer.render(scene, camera);
-            requestAnimationFrame( animate );
+            requestAnimationFrame(animate);
         }
         requestAnimationFrame(animate);
     }
 
     return () => {
         isTerminated = true;
-        clearInterval(interval); 
+        clearInterval(interval);
         input.unhookEvents();
     };
 }

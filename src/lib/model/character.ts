@@ -87,9 +87,9 @@ export class Clown extends Character {
         this.loadAnimationFBX('Running', './assets/clownRunning.fbx');
         this.loadAnimationFBX('Walking', './assets/clownWalking.fbx');
         this.setInitState('Idle');
-        this.sight.far = 800;
-        this.sightLeft.far = 800;
-        this.sightRight.far = 800;
+        this.sight.far = 3250;
+        this.sightLeft.far = 3250;
+        this.sightRight.far = 3250;
         this.sight.firstHitOnly = true;
         this.sightLeft.firstHitOnly = true;
         this.sightRight.firstHitOnly = true;
@@ -99,11 +99,11 @@ export class Clown extends Character {
         );
         this.sightLeft.set(
             new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(Math.sin(this.angle - Math.PI / 6), 0, Math.cos(this.angle - Math.PI / 6)).normalize()
+            new THREE.Vector3(Math.sin(this.angle - Math.PI / 5), 0, Math.cos(this.angle - Math.PI / 5)).normalize()
         );
         this.sightRight.set(
             new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(Math.sin(this.angle + Math.PI / 6), 0, Math.cos(this.angle + Math.PI / 6)).normalize()
+            new THREE.Vector3(Math.sin(this.angle + Math.PI / 5), 0, Math.cos(this.angle + Math.PI / 5)).normalize()
         );
     }
 
@@ -113,14 +113,15 @@ export class Clown extends Character {
         this.object?.rotation.set(0, this.angle, 0);
         this.object?.position.add(new THREE.Vector3((dt / 0.016) * this.playerSpeed * this.v * Math.sin(this.angle), 0, (dt / 0.016) * this.playerSpeed * this.v * Math.cos(this.angle)));
 
-        if (prev_position)
+        if (prev_position) {
             for (let collisionTarget of collisionTargets) {
                 if (this.collisionSphere?.intersectsBox(collisionTarget)) {
                     this.object?.position.set(prev_position?.x, prev_position?.y, prev_position?.z);
                 }
             }
+        }
 
-        this.collisionSphere = new THREE.Sphere(this.object?.position, 40);
+        this.collisionSphere = new THREE.Sphere(this.object?.position, 30);
 
         if (this.v == 0) this.crossFade(this.currentState, 'Idle', 0.1);
         else if (this.playerSpeed == 2) this.crossFade(this.currentState, 'Walking', 0.1);
@@ -151,22 +152,22 @@ export class Clown extends Character {
         );
         this.sightLeft.set(
             this.object!.position,
-            new THREE.Vector3(Math.sin(this.angle - Math.PI / 6), 0, Math.cos(this.angle - Math.PI / 6)).normalize()
+            new THREE.Vector3(Math.sin(this.angle - Math.PI / 5), 0, Math.cos(this.angle - Math.PI / 5)).normalize()
         );
         this.sightRight.set(
             this.object!.position,
-            new THREE.Vector3(Math.sin(this.angle + Math.PI / 6), 0, Math.cos(this.angle + Math.PI / 6)).normalize()
+            new THREE.Vector3(Math.sin(this.angle + Math.PI / 5), 0, Math.cos(this.angle + Math.PI / 5)).normalize()
         );
 
         let results = [];
         let intersects = this.sightLeft.intersectObjects(walls);
-        if(intersects.length == 0) results.push(this.sightLeft.far);
+        if (intersects.length == 0) results.push(this.sightLeft.far);
         else results.push(intersects[0].distance);
         intersects = this.sight.intersectObjects(walls);
-        if(intersects.length == 0) results.push(this.sight.far);
+        if (intersects.length == 0) results.push(this.sight.far);
         else results.push(intersects[0].distance);
         intersects = this.sightRight.intersectObjects(walls);
-        if(intersects.length == 0) results.push(this.sightRight.far);
+        if (intersects.length == 0) results.push(this.sightRight.far);
         else results.push(intersects[0].distance);
         return results;
     }

@@ -7,11 +7,21 @@
 import Network from './Network.js';
 
 export default class Creature {
-	constructor(model) {
-		this.network = new Network(model); // Init the network
+	clone() {
+		let clone = new Creature();
+		clone.fitness = this.fitness;
+		clone.score = this.score;
+		clone.network = this.network.clone();
+		return clone;
+	}
 
-		this.fitness = 0;
-		this.score = 0;
+	constructor(model) {
+		if(model != undefined) {
+			this.network = new Network(model); // Init the network
+
+			this.fitness = 0;
+			this.score = 0;
+		}
 
 		this.flattenGenes = function () {
 			let genes = [];

@@ -11,12 +11,14 @@ import Creature from './Creature.js';
 
 const RANDOM = crossover.RANDOM;
 const _RANDOM = mutate.RANDOM;
-export { NEAT, activation, crossover, mutate};
+export { NEAT, activation, crossover, mutate };
 
 class NEAT {
 	static mapNumber(val, min, max) {
 		return (val - min) / (max - min);
 	}
+
+	bestCreature;
 
 	constructor(config) {
 		this.creatures = [];
@@ -29,7 +31,7 @@ class NEAT {
 		this.mutationMethod = config.mutationMethod || _RANDOM;
 		this.generation = 0;
 
-		for (let i = 0; i < this.model.length; i++) { // Sanitize the model.
+		for (let i = 0; i < this.model.length; i++) {
 			let data = Object.assign({}, this.model[i]);
 			if (this.model[i].activationfunc) {
 				data.activationfunc = data.activationfunc.name;
@@ -39,7 +41,7 @@ class NEAT {
 			}
 		}
 
-		for (let i = 0; i < this.populationSize; i++) { // Create the creatures.
+		for (let i = 0; i < this.populationSize; i++) {
 			this.creatures.push(new Creature(this.model));
 		}
 
@@ -52,11 +54,21 @@ class NEAT {
 		};
 
 		this.crossover = function () {
+			let index = 0;
+			let max = -99999;
+			for (let i = 0; i < this.creatures.length; i++) {
+				if (this.creatures[i].score > max) {
+					max = this.creatures[i].score;
+					index = i;
+				}
+			}
+			this.bestCreature = this.creatures[index].clone();
+			this.oldCreatures = [];
+			for(let i = 0; i < this.creatures.length; i++)
+				this.oldCreatures.push(this.creatures[i].clone());
 			for (let i = 0; i < this.populationSize; i++) {
-				this.oldCreatures = Object.assign([], this.creatures);
 				let parentx = this.pickCreature();
 				let parenty = this.pickCreature();
-
 				let genes = this.crossoverMethod(parentx.flattenGenes(), parenty.flattenGenes());
 				this.creatures[i].setFlattenedGenes(genes);
 			}
@@ -96,18 +108,6 @@ class NEAT {
 			this.mutate();
 			this.generation++;
 			console.log('Generation: ' + this.generation);
-		};
-
-		this.bestCreature = function () {
-			let index = 0;
-			let max = -Infinity;
-			for (let i = 0; i < this.oldCreatures.length; i++) {
-				if (this.oldCreatures[i].fitness > max) {
-					max = this.oldCreatures[i].fitness;
-					index = i;
-				}
-			}
-			return this.oldCreatures[index];
 		};
 
 		this.getDecisions = function () {

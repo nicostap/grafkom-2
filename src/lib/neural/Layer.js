@@ -7,18 +7,32 @@
 import Node from './Node.js';
 
 export class Layer {
-	constructor(nodeCount, type, activationfunc) {
-		this.nodes = [];
-		this.bias = undefined;
-		this.type = type;
-		this.activationfunc = activationfunc;
-
-		for (let i = 0; i < nodeCount; i++) { // Inits  nodes.
-			this.nodes.push(new Node());
+	clone() {
+		let clone = new Layer();
+		clone.nodes = [];
+		for (let i = 0; i < this.nodes.length; i++) {
+			clone.nodes.push(this.nodes[i].clone());
 		}
+		if (this.bias) clone.bias = this.bias.clone();
+		clone.type = this.type;
+		clone.activationfunc = this.activationfunc;
+		return clone;
+	}
 
-		if (this.type !== "output") this.bias = new Node();
+	constructor(nodeCount, type, activationfunc) {
+		if (nodeCount != undefined) {
+			this.nodes = [];
+			this.bias = undefined;
+			this.type = type;
+			this.activationfunc = activationfunc;
 
+			for (let i = 0; i < nodeCount; i++) { // Inits  nodes.
+				this.nodes.push(new Node());
+			}
+
+			if (this.type !== "output") this.bias = new Node();
+		}
+		
 		this.connect = function (count) {
 			for (let i = 0; i < this.nodes.length; i++) {
 				this.nodes[i].initWeights(count);
