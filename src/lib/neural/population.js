@@ -195,26 +195,25 @@ export default class Population {
 		});
 
 		console.log("Generation " + this.generation);
-
-		this.bestPlayer.lifespan = 0;
-		this.bestPlayer.dead = false;
-		this.bestPlayer.score = 1;
 	}
 
 	calculateFitness() {
 		let currentMax = 0;
-		this.population.forEach((element) => {
+		let bestIndex;
+		this.bestFitness = 0;
+		this.population.forEach((element, index) => {
 			element.calculateFitness();
 			if (element.fitness > this.bestFitness) {
 				this.bestFitness = element.fitness;
 				this.bestPlayer = element.clone();
+				bestIndex = index;
 				this.bestPlayer.brain.id = "BestGenome";
 			}
 
 			if (element.fitness > currentMax)
 				currentMax = element.fitness;
 		});
-
+		
 		//Normalize
 		this.population.forEach((element, elementN) => {
 			element.fitness /= currentMax;

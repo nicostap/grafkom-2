@@ -30,11 +30,11 @@ export class AI {
         scene.add(this.object);
     }
 
-    reset(x: number, y: number, z: number, angle: number) {
+    reset(x: number, y: number, z: number, angle: number, v: number, playerSpeed: number) {
         this.position.set(x, y, z);
-        this.playerSpeed = 2;
+        this.playerSpeed = playerSpeed;
         this.angle = angle;
-        this.v = 0;
+        this.v = v;
         this.isAlive = true;
         (this.object.material as THREE.MeshBasicMaterial).color.setHex(0x0000FF);
     }
@@ -67,20 +67,6 @@ export class AI {
     }
 
     run(dt: number, wallCollisionBoxes: THREE.Box3[], keyPressed: { [key: string]: boolean }) {
-        this.object.position.set(...this.position.toArray());
-        let prev_position = this.position.clone();
-        this.position = this.position.add(new THREE.Vector3((dt / 0.016) * this.playerSpeed * this.v * Math.sin(this.angle), 0, (dt / 0.016) * this.playerSpeed * this.v * Math.cos(this.angle)));
-        this.collisionSphere = new THREE.Sphere(this.position, 35);
-
-        for (let wallCollisionBox of wallCollisionBoxes) {
-            if (this.collisionSphere?.intersectsBox(wallCollisionBox)) {
-                this.position.x = prev_position.x;
-                this.position.z = prev_position.z;
-                this.isAlive = false;
-                (this.object.material as THREE.MeshBasicMaterial).color.setHex(0xFF0000);
-            }
-        }
-
         if (keyPressed['w']) {
             this.v = 1;
         } else {
@@ -96,6 +82,20 @@ export class AI {
             this.playerSpeed = 6;
         } else {
             this.playerSpeed = 2;
+        }
+
+        this.object.position.set(...this.position.toArray());
+        let prev_position = this.position.clone();
+        this.position = this.position.add(new THREE.Vector3((dt / 0.016) * this.playerSpeed * this.v * Math.sin(this.angle), 0, (dt / 0.016) * this.playerSpeed * this.v * Math.cos(this.angle)));
+        this.collisionSphere = new THREE.Sphere(this.position, 35);
+
+        for (let wallCollisionBox of wallCollisionBoxes) {
+            if (this.collisionSphere?.intersectsBox(wallCollisionBox)) {
+                this.position.x = prev_position.x;
+                this.position.z = prev_position.z;
+                this.isAlive = false;
+                (this.object.material as THREE.MeshBasicMaterial).color.setHex(0xFF0000);
+            }
         }
     }
 }

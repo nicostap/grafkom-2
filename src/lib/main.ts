@@ -126,19 +126,21 @@ export function renderMain() {
         new THREE.Vector3(3000, 0, 1500),
     ];
     let target = targets[0];
+    let targetReached = 0;
     const evolve = () => {
         for (let i = 0; i < population.size; i++) {
             monsters[i].reset(
                 clown.object!.position.x,
                 clown.object!.position.y,
                 clown.object!.position.z,
-                clown.angle
+                clown.angle,
+                clown.v,
+                clown.playerSpeed
             );
         }
         population.naturalSelection();
-        if (clown.object!.position.distanceTo(target) < 35) target = targets[Math.floor(Math.random() * targets.length)];
     };
-    let interval = setInterval(evolve, 30000);
+    let interval = setInterval(evolve, 20000);
 
     // Exporting
     window.addEventListener('keydown', (e) => {
@@ -183,7 +185,9 @@ export function renderMain() {
                 // AI
                 let inputs = [];
                 for (let i = 0; i < population.size; i++) {
-                    let sightResult = monsters[i].getDistanceToWall(walls);
+                    let sightResult;
+                    if(monsters[i].isAlive) sightResult = monsters[i].getDistanceToWall(walls);
+                    else sightResult = [30, 30, 30];
                     inputs.push([
                         Population.mapNumber(monsters[i].position.x, -250, 3250),
                         Population.mapNumber(monsters[i].position.z, -250, 3250),
@@ -197,7 +201,7 @@ export function renderMain() {
                 }
                 const decisions: any = population.update(inputs);
                 for (let i = 0; i < population.size; i++) {
-                    if (decisions[i].length == 0) continue;
+                    if(!monsters[i].isAlive) continue;
                     const prev_position = monsters[i].position.clone();
                     const inputPressed = {
                         'w': decisions[i][0] > 0,
@@ -206,16 +210,23 @@ export function renderMain() {
                         ' ': decisions[i][3] > 0,
                     }
                     monsters[i].run(dt, wallCollisionBoxes, inputPressed);
-                    if (prev_position.equals(monsters[i].position)) samePosition[i]++;
+                    if (prev_position.equals(monsters[i].position)) samePosition[i] += 1;
                     else samePosition[i] = 1;
-                    if(samePosition[i] >= 300) monsters[i].isAlive = false;
-                    population.addScore(100 / (1 + samePosition[i] * monsters[i].position.distanceTo(target)), monsters[i].isAlive, i);
+                    if(samePosition[i] > 300) monsters[i].isAlive = false;
+                    population.addScore(20 / (1 + samePosition[i] * monsters[i].position.distanceTo(target)), monsters[i].isAlive, i);
                 }
 
                 if(population.done()) {
                     evolve();
                     clearInterval(interval);
-                    interval = setInterval(evolve, 30000);
+                    interval = setInterval(evolve, 25000);
+                } else if (clown.object!.position.distanceTo(target) < 70) {
+                    target = targets[Math.floor(Math.random() * targets.length)];
+                    targetReached++;
+                    console.log('Target reached : ' + targetReached);
+                    evolve();
+                    clearInterval(interval);
+                    interval = setInterval(evolve, 25000);
                 }
 
                 if (population.generation > 0) {

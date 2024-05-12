@@ -14,7 +14,7 @@ export default class Node {
 		if (num == undefined) return;
 		this.number = num;
 		this.layer = lay;
-		this.activationFunction = Math.floor(Math.random() * 7); //Number between 0 and 6
+		this.activationFunction = Math.floor(Math.random() * 6); //Number between 0 and 6
 		this.bias = Math.random() * 2 - 1;
 		this.output = isOutput || false; //is this node an Output node?
 
@@ -43,7 +43,7 @@ export default class Node {
 	}
 
 	mutateActivation() { //Randomly choose a new activationFunction
-		this.activationFunction = Math.floor(Math.random() * 7); //Number between 0 and 6
+		this.activationFunction = Math.floor(Math.random() * 6); //Number between 0 and 6
 	}
 
 	isConnectedTo(node) { //Check if two nodes are connected
@@ -91,10 +91,7 @@ export default class Node {
 				return x < (x / 3) ? (x / 3) : x;
 				break;
 			case 5: //Step
-				return x < 0 ? 0 : 1;
-				break;
-			case 6: //RELU
-				return x < 0 ? 0 : x;
+				return x < 0 ? -1 : 1;
 				break;
 			default: //Bipolar Sigmoid
 				return 2 / (1 + Math.pow(Math.E, -x)) - 1;

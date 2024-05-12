@@ -54,7 +54,6 @@ export default class Player{
 
 	calculateFitness(){
 		this.fitness = this.score;
-		if(this.dead) this.fitness *= 0.01;
 		this.fitness /= this.brain.calculateWeight();
 	}
 }

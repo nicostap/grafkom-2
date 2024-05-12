@@ -4,10 +4,10 @@ import { FBXLoader } from "three/examples/jsm/Addons.js";
 abstract class Character {
     loader = new FBXLoader();
     loaded: boolean = false;
-    onProgress =  (xhr: any) => {
+    onProgress = (xhr: any) => {
         if (xhr.lengthComputable) {
             let percentComplete = xhr.loaded / xhr.total * 100;
-            if(percentComplete == 100) this.loaded = true;
+            if (percentComplete == 100) this.loaded = true;
             // console.log(percentComplete.toFixed(2) + '% downloaded');
         }
     };
@@ -110,25 +110,6 @@ export class Clown extends Character {
     }
 
     run(dt: number, collisionTargets: THREE.Box3[], keyPressed: { [key: string]: boolean }) {
-        let prev_position = this.object?.position.clone();
-        super.run(dt, collisionTargets, keyPressed);
-        this.object?.rotation.set(0, this.angle, 0);
-        this.object?.position.add(new THREE.Vector3((dt / 0.016) * this.playerSpeed * this.v * Math.sin(this.angle), 0, (dt / 0.016) * this.playerSpeed * this.v * Math.cos(this.angle)));
-
-        if (prev_position) {
-            for (let collisionTarget of collisionTargets) {
-                if (this.collisionSphere?.intersectsBox(collisionTarget)) {
-                    this.object?.position.set(prev_position?.x, prev_position?.y, prev_position?.z);
-                }
-            }
-        }
-
-        this.collisionSphere = new THREE.Sphere(this.object?.position, 35);
-
-        if (this.v == 0) this.crossFade(this.currentState, 'Idle', 0.1);
-        else if (this.playerSpeed == 2) this.crossFade(this.currentState, 'Walking', 0.1);
-        else this.crossFade(this.currentState, 'Running', 0.1);
-
         if (keyPressed['w']) {
             this.v = 1;
         } else {
@@ -145,6 +126,24 @@ export class Clown extends Character {
         } else {
             this.playerSpeed = 2;
         }
+
+        let prev_position = this.object?.position.clone();
+        super.run(dt, collisionTargets, keyPressed);
+        this.object?.rotation.set(0, this.angle, 0);
+        this.object?.position.add(new THREE.Vector3((dt / 0.016) * this.playerSpeed * this.v * Math.sin(this.angle), 0, (dt / 0.016) * this.playerSpeed * this.v * Math.cos(this.angle)));
+        this.collisionSphere = new THREE.Sphere(this.object?.position, 35);
+
+        if (prev_position) {
+            for (let collisionTarget of collisionTargets) {
+                if (this.collisionSphere?.intersectsBox(collisionTarget)) {
+                    this.object?.position.set(prev_position?.x, prev_position?.y, prev_position?.z);
+                }
+            }
+        }
+
+        if (this.v == 0) this.crossFade(this.currentState, 'Idle', 0.1);
+        else if (this.playerSpeed == 2) this.crossFade(this.currentState, 'Walking', 0.1);
+        else this.crossFade(this.currentState, 'Running', 0.1);
     }
 
     getDistanceToWall(walls: THREE.Object3D[]) {
