@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Clown } from './model/character';
 import { Input } from './input';
-import { AI } from './model/ai';
+import { Agent } from './model/agent';
 import { MeshBVH } from 'three-mesh-bvh';
 import { acceleratedRaycast } from "three-mesh-bvh";
 import Population from './neural/population';
@@ -26,9 +26,6 @@ export function renderMain() {
     document.body.appendChild(renderer.domElement);
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
-
-    // Clown
-    let clown = new Clown(scene);
 
     // Map
     let map = [
@@ -104,18 +101,11 @@ export function renderMain() {
         population = Population.import(importJSON)!;
     } catch (e) {
         console.log("No import found!");
-        population = new Population(150);
-    }
-
-    // Neural Set Up
-    let monsters: AI[] = [];
-    let samePosition: number[] = [];
-    for (let i = 0; i < population.size; i++) {
-        monsters.push(new AI(scene));
-        samePosition.push(1);
+        population = new Population(300);
     }
 
     // Evolution
+    let isEvolveContinuos = false; // Buat training mode atau game mode
     const targets = [
         new THREE.Vector3(3000, 0, 3000),
         new THREE.Vector3(0, 0, 0),
@@ -124,23 +114,44 @@ export function renderMain() {
         new THREE.Vector3(2000, 0, 2500),
         new THREE.Vector3(1000, 0, 1000),
         new THREE.Vector3(3000, 0, 1500),
+        new THREE.Vector3(2000, 0, 1500),
+        new THREE.Vector3(2500, 0, 2000),
     ];
     let target = targets[0];
+    let origin = targets[1];
     let targetReached = 0;
     const evolve = () => {
         for (let i = 0; i < population.size; i++) {
-            monsters[i].reset(
-                clown.object!.position.x,
-                clown.object!.position.y,
-                clown.object!.position.z,
-                clown.angle,
-                clown.v,
-                clown.playerSpeed
-            );
+            if(isEvolveContinuos) {
+                monsters[i].reset(
+                    clown.object!.position.x,
+                    clown.object!.position.y,
+                    clown.object!.position.z,
+                    clown.angle
+                )
+            } else {
+                monsters[i].reset(
+                    ...origin.toArray(), 0
+                );
+                clown.object?.position.set(
+                    ...origin.toArray()
+                );
+                clown.angle = 0;
+            }
         }
         population.naturalSelection();
     };
-    let interval = setInterval(evolve, 20000);
+    const maxEvolveTime = 30000;
+    let interval = setInterval(evolve, maxEvolveTime);
+
+    // Neural Set Up
+    let monsters: Agent[] = [];
+    for (let i = 0; i < population.size; i++) {
+        monsters.push(new Agent(scene, origin));
+    }
+
+    // Clown
+    let clown = new Clown(scene, origin);
 
     // Exporting
     window.addEventListener('keydown', (e) => {
@@ -186,7 +197,7 @@ export function renderMain() {
                 let inputs = [];
                 for (let i = 0; i < population.size; i++) {
                     let sightResult;
-                    if(monsters[i].isAlive) sightResult = monsters[i].getDistanceToWall(walls);
+                    if (monsters[i].isAlive) sightResult = monsters[i].getDistanceToWall(walls);
                     else sightResult = [30, 30, 30];
                     inputs.push([
                         Population.mapNumber(monsters[i].position.x, -250, 3250),
@@ -201,32 +212,32 @@ export function renderMain() {
                 }
                 const decisions: any = population.update(inputs);
                 for (let i = 0; i < population.size; i++) {
-                    if(!monsters[i].isAlive) continue;
-                    const prev_position = monsters[i].position.clone();
+                    if (!monsters[i].isAlive) continue;
                     const inputPressed = {
                         'w': decisions[i][0] > 0,
                         'a': decisions[i][1] > 0,
                         'd': decisions[i][2] > 0,
                         ' ': decisions[i][3] > 0,
                     }
-                    monsters[i].run(dt, wallCollisionBoxes, inputPressed);
-                    if (prev_position.equals(monsters[i].position)) samePosition[i] += 1;
-                    else samePosition[i] = 1;
-                    if(samePosition[i] > 300) monsters[i].isAlive = false;
-                    population.addScore(20 / (1 + samePosition[i] * monsters[i].position.distanceTo(target)), monsters[i].isAlive, i);
+                    monsters[i].run(dt, wallCollisionBoxes, inputPressed, target);
+                    population.addScore((dt / 0.016) * 100 / (1000 * monsters[i].timeBeforePersonalBest + monsters[i].position.distanceTo(target)), monsters[i].isAlive, i);
                 }
 
-                if(population.done()) {
+                if (population.done()) {
                     evolve();
                     clearInterval(interval);
-                    interval = setInterval(evolve, 25000);
+                    interval = setInterval(evolve, maxEvolveTime);
                 } else if (clown.object!.position.distanceTo(target) < 70) {
                     target = targets[Math.floor(Math.random() * targets.length)];
                     targetReached++;
                     console.log('Target reached : ' + targetReached);
+                    do {
+                        origin = targets[Math.floor(Math.random() * targets.length)];
+                        target = targets[Math.floor(Math.random() * targets.length)];
+                    } while(origin.equals(target));
                     evolve();
                     clearInterval(interval);
-                    interval = setInterval(evolve, 25000);
+                    interval = setInterval(evolve, maxEvolveTime);
                 }
 
                 if (population.generation > 0) {

@@ -22,7 +22,7 @@ abstract class Character {
         this.mixer?.update(dt);
     }
 
-    loadObjectFBX(scene: THREE.Scene, url: string) {
+    loadObjectFBX(scene: THREE.Scene, url: string, position?: THREE.Vector3) {
         this.loader.load(url, (object) => {
             this.mixer = new THREE.AnimationMixer(object);
             object.traverse(function (child) {
@@ -33,6 +33,7 @@ abstract class Character {
             });
             scene.add(object);
             this.object = object;
+            if(position !== undefined) this.object.position.set(position.x, position.y, position.z);
         }, this.onProgress);
     }
 
@@ -82,9 +83,9 @@ export class Clown extends Character {
     sightLeft: any = new THREE.Raycaster();
     sightRight: any = new THREE.Raycaster();
 
-    constructor(scene: THREE.Scene) {
+    constructor(scene: THREE.Scene, origin: THREE.Vector3) {
         super();
-        this.loadObjectFBX(scene, './assets/clownRunning.fbx');
+        this.loadObjectFBX(scene, './assets/clownRunning.fbx', origin);
         this.loadAnimationFBX('Idle', './assets/clownIdle.fbx');
         this.loadAnimationFBX('Running', './assets/clownRunning.fbx');
         this.loadAnimationFBX('Walking', './assets/clownWalking.fbx');
