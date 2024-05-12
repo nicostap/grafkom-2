@@ -3,9 +3,11 @@ import { FBXLoader } from "three/examples/jsm/Addons.js";
 
 abstract class Character {
     loader = new FBXLoader();
-    onProgress = function (xhr: any) {
+    loaded: boolean = false;
+    onProgress =  (xhr: any) => {
         if (xhr.lengthComputable) {
             let percentComplete = xhr.loaded / xhr.total * 100;
+            if(percentComplete == 100) this.loaded = true;
             // console.log(percentComplete.toFixed(2) + '% downloaded');
         }
     };

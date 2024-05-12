@@ -9,17 +9,17 @@ let genomeOutputN = 4;
 
 export default class Player{
 	constructor(id){
-		this.brain = new Genome(genomeInputsN, genomeOutputN, id);
 		this.fitness;
-
 		this.score = 1;
 		this.lifespan = 0;
 		this.dead = false;
-		this.decisions = []; //Current Output values
-		this.vision = []; //Current input values
+		this.decisions = []; // Current Output values
+		this.vision = []; // Current input values
+		if(id == undefined) return;
+		this.brain = new Genome(genomeInputsN, genomeOutputN, id);
 	}
 
-	clone() { //Returns a copy of this player
+	clone() { // Returns a copy of this player
 		let clone = new Player();
 		clone.brain = this.brain.clone();
 		return clone;

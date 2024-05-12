@@ -11,10 +11,13 @@ function randomGaussian(mean = 0, stdev = 1) {
 
 export default class Connection {
 	constructor(from, to, weight){
+		if(from == undefined) return;
 		this.fromNode = from; //type: Node
 		this.toNode = to; //type: Node
 		this.weight = weight; //type: Number
 		this.enabled = true;
+		this.fromNodeNumber = from.number;
+		this.toNodeNumber = to.number;
 	}
 
 	mutateWeight(){ //Randomly mutate the weight of this connection

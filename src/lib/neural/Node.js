@@ -1,19 +1,20 @@
 var activationsNames = ["Sigmoid", "Identity", "Step", "Tanh", "ReLu"]; //Used in the svg drawing
 
-function randomGaussian(mean=0, stdev=1) {
-    const u = 1 - Math.random();
-    const v = Math.random();
-    const z = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
-    return z * stdev + mean;
+function randomGaussian(mean = 0, stdev = 1) {
+	const u = 1 - Math.random();
+	const v = Math.random();
+	const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+	return z * stdev + mean;
 }
 
 //The Node Class
 //This is where math appends
 export default class Node {
 	constructor(num, lay, isOutput) {
+		if (num == undefined) return;
 		this.number = num;
 		this.layer = lay;
-		this.activationFunction = Math.floor(Math.random() * 5); //Number between 0 and 4
+		this.activationFunction = Math.floor(Math.random() * 7); //Number between 0 and 6
 		this.bias = Math.random() * 2 - 1;
 		this.output = isOutput || false; //is this node an Output node?
 
@@ -42,7 +43,7 @@ export default class Node {
 	}
 
 	mutateActivation() { //Randomly choose a new activationFunction
-		this.activationFunction = Math.floor(Math.random() * 5); //Number between 0 and 4
+		this.activationFunction = Math.floor(Math.random() * 7); //Number between 0 and 6
 	}
 
 	isConnectedTo(node) { //Check if two nodes are connected
@@ -74,21 +75,27 @@ export default class Node {
 
 	activation(x) { //All the possible activation Functions
 		switch (this.activationFunction) {
-			// case 0: //Sigmoid
-			// 	return 1 / (1 + Math.pow(Math.E, -4.9 * x));
-			// 	break;
-			// case 1: //Identity
-			// 	return x;
-			// 	break;
-			// case 2: //Step
-			// 	return x > 0 ? 1 : 0;
-			// 	break;
-			// case 3: //Tanh
-			// 	return Math.tanh(x);
-			// 	break;
-			// case 4: //ReLu
-			// 	return x < 0 ? 0 : x;
-			// 	break;
+			case 0: //SELU
+				return x < 0 ? 3 * (Math.pow(Math.E, x) - 1) : 0;
+				break;
+			case 1: //Identity
+				return x;
+				break;
+			case 2: //Bipolar Sigmoid
+				return 2 / (1 + Math.pow(Math.E, -x)) - 1;
+				break;
+			case 3: //Tanh
+				return Math.tanh(x);
+				break;
+			case 4: //Paramteric RELU
+				return x < (x / 3) ? (x / 3) : x;
+				break;
+			case 5: //Step
+				return x < 0 ? 0 : 1;
+				break;
+			case 6: //RELU
+				return x < 0 ? 0 : x;
+				break;
 			default: //Bipolar Sigmoid
 				return 2 / (1 + Math.pow(Math.E, -x)) - 1;
 				break;

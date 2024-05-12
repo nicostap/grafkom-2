@@ -5,6 +5,7 @@ import { AI } from './model/ai';
 import { MeshBVH } from 'three-mesh-bvh';
 import { acceleratedRaycast } from "three-mesh-bvh";
 import Population from './neural/population';
+import importJSON from './neural/import';
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
@@ -97,8 +98,14 @@ export function renderMain() {
     // Input
     const input = new Input();
 
-    // Neural v2
-    const population = new Population(100);
+    // Neural initialise
+    let population: Population;
+    try {
+        population = Population.import(importJSON)!;
+    } catch (e) {
+        console.log("No import found!");
+        population = new Population(150);
+    }
 
     // Neural Set Up
     let monsters: AI[] = [];
@@ -119,7 +126,7 @@ export function renderMain() {
         new THREE.Vector3(3000, 0, 1500),
     ];
     let target = targets[0];
-    const interval = setInterval(() => {
+    const evolve = () => {
         for (let i = 0; i < population.size; i++) {
             monsters[i].reset(
                 clown.object!.position.x,
@@ -129,8 +136,27 @@ export function renderMain() {
             );
         }
         population.naturalSelection();
-        if(population.generation % 10 == 9) target = targets[Math.floor(Math.random() * targets.length)];
-    }, 15000);
+        if (clown.object!.position.distanceTo(target) < 35) target = targets[Math.floor(Math.random() * targets.length)];
+    };
+    let interval = setInterval(evolve, 30000);
+
+    // Exporting
+    window.addEventListener('keydown', (e) => {
+        if (e.key == 's') {
+            var cache: any[] | null = [];
+            let json = JSON.stringify(population, (key, value) => {
+                if (key == "toNode") return undefined;
+                else if (key == "fromNode") return undefined;
+                if (typeof value === 'object' && value !== null) {
+                    if (cache!.includes(value)) return;
+                    cache!.push(value);
+                }
+                return value;
+            });
+            cache = null;
+            console.log(json);
+        }
+    });
 
     // Animation
     let isTerminated = false;
@@ -142,46 +168,56 @@ export function renderMain() {
     scene.add(arrowLeft);
     scene.add(arrowRight);
     {
+        let renderCount = 0;
         var time_prev = 0;
         function animate(time: number) {
             // Time
             var dt = time - time_prev;
             dt *= 0.001;
             time_prev = time;
-
-            // AI
-            let inputs = [];
-            for (let i = 0; i < population.size; i++) {
-                let sightResult = monsters[i].getDistanceToWall(walls);
-                inputs.push([
-                    Population.mapNumber(monsters[i].position.x, -250, 3250),
-                    Population.mapNumber(monsters[i].position.z, -250, 3250),
-                    Population.mapNumber(monsters[i].angle % (2 * Math.PI), 0, 2 * Math.PI),
-                    Population.mapNumber(target.x, -250, 3250),
-                    Population.mapNumber(target.z, -250, 3250),
-                    Population.mapNumber(sightResult[0], 30, monsters[i].sightLeft.far),
-                    Population.mapNumber(sightResult[1], 30, monsters[i].sight.far),
-                    Population.mapNumber(sightResult[2], 30, monsters[i].sightRight.far),
-                ]);
-            }
-            const decisions: any = population.update(inputs);
-            for (let i = 0; i < population.size; i++) {
-                if(decisions[i].length == 0) continue;
-                const prev_position = monsters[i].position.clone();
-                const inputPressed = {
-                    'w': decisions[i][0] >= 0,
-                    'a': decisions[i][1] >= 0,
-                    'd': decisions[i][2] >= 0,
-                    ' ': decisions[i][3] >= 0,
-                }
-                monsters[i].run(dt, wallCollisionBoxes, inputPressed);
-                if(prev_position.equals(monsters[i].position)) samePosition[i] += 5;
-                else samePosition[i] = 1;
-                population.addScore(20 / (1 + samePosition[i] * monsters[i].position.distanceTo(target)), monsters[i].isAlive, i);
-            }
+            renderCount++;
 
             // Clown
-            if (clown.object) {
+            if (renderCount >= 50 && clown.object) {
+                renderCount = 50;
+                // AI
+                let inputs = [];
+                for (let i = 0; i < population.size; i++) {
+                    let sightResult = monsters[i].getDistanceToWall(walls);
+                    inputs.push([
+                        Population.mapNumber(monsters[i].position.x, -250, 3250),
+                        Population.mapNumber(monsters[i].position.z, -250, 3250),
+                        Population.mapNumber(monsters[i].angle % (2 * Math.PI), 0, 2 * Math.PI),
+                        Population.mapNumber(target.x, -250, 3250),
+                        Population.mapNumber(target.z, -250, 3250),
+                        Population.mapNumber(sightResult[0], 30, monsters[i].sightLeft.far),
+                        Population.mapNumber(sightResult[1], 30, monsters[i].sight.far),
+                        Population.mapNumber(sightResult[2], 30, monsters[i].sightRight.far),
+                    ]);
+                }
+                const decisions: any = population.update(inputs);
+                for (let i = 0; i < population.size; i++) {
+                    if (decisions[i].length == 0) continue;
+                    const prev_position = monsters[i].position.clone();
+                    const inputPressed = {
+                        'w': decisions[i][0] > 0,
+                        'a': decisions[i][1] > 0,
+                        'd': decisions[i][2] > 0,
+                        ' ': decisions[i][3] > 0,
+                    }
+                    monsters[i].run(dt, wallCollisionBoxes, inputPressed);
+                    if (prev_position.equals(monsters[i].position)) samePosition[i]++;
+                    else samePosition[i] = 1;
+                    if(samePosition[i] >= 300) monsters[i].isAlive = false;
+                    population.addScore(100 / (1 + samePosition[i] * monsters[i].position.distanceTo(target)), monsters[i].isAlive, i);
+                }
+
+                if(population.done()) {
+                    evolve();
+                    clearInterval(interval);
+                    interval = setInterval(evolve, 30000);
+                }
+
                 if (population.generation > 0) {
                     let sightResult = clown.getDistanceToWall(walls);
                     population.bestPlayer!.setInput([
@@ -197,10 +233,10 @@ export function renderMain() {
                     population.bestPlayer!.feedForward();
                     const decision = population.bestPlayer!.decisions;
                     const inputPressed = {
-                        'w': decision[0] >= 0,
-                        'a': decision[1] >= 0,
-                        'd': decision[2] >= 0,
-                        ' ': decision[3] >= 0,
+                        'w': decision[0] > 0,
+                        'a': decision[1] > 0,
+                        'd': decision[2] > 0,
+                        ' ': decision[3] > 0,
                     }
                     arrow.position.set(clown.sight.ray.origin.x, clown.sight.ray.origin.y, clown.sight.ray.origin.z);
                     arrowLeft.position.set(clown.sight.ray.origin.x, clown.sight.ray.origin.y, clown.sight.ray.origin.z);

@@ -16,6 +16,8 @@ export default class Genome {
 		this.nodes = [];
 		this.connections = [];
 
+		if(id == undefined) return;
+
 		if(!offSpring) { //This is not an offspring genome generate a fullyConnected net
 			for (let i = 0; i < this.inputs; i++) {
 				this.nodes.push(new Node(this.nextNode, 0));
