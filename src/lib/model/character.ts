@@ -99,11 +99,11 @@ export class Clown extends Character {
         );
         this.sightLeft.set(
             new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(Math.sin(this.angle - Math.PI / 5), 0, Math.cos(this.angle - Math.PI / 5)).normalize()
+            new THREE.Vector3(Math.sin(this.angle - Math.PI / 4), 0, Math.cos(this.angle - Math.PI / 4)).normalize()
         );
         this.sightRight.set(
             new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(Math.sin(this.angle + Math.PI / 5), 0, Math.cos(this.angle + Math.PI / 5)).normalize()
+            new THREE.Vector3(Math.sin(this.angle + Math.PI / 4), 0, Math.cos(this.angle + Math.PI / 4)).normalize()
         );
     }
 
@@ -121,7 +121,7 @@ export class Clown extends Character {
             }
         }
 
-        this.collisionSphere = new THREE.Sphere(this.object?.position, 30);
+        this.collisionSphere = new THREE.Sphere(this.object?.position, 35);
 
         if (this.v == 0) this.crossFade(this.currentState, 'Idle', 0.1);
         else if (this.playerSpeed == 2) this.crossFade(this.currentState, 'Walking', 0.1);
@@ -152,11 +152,11 @@ export class Clown extends Character {
         );
         this.sightLeft.set(
             this.object!.position,
-            new THREE.Vector3(Math.sin(this.angle - Math.PI / 5), 0, Math.cos(this.angle - Math.PI / 5)).normalize()
+            new THREE.Vector3(Math.sin(this.angle - Math.PI / 4), 0, Math.cos(this.angle - Math.PI / 4)).normalize()
         );
         this.sightRight.set(
             this.object!.position,
-            new THREE.Vector3(Math.sin(this.angle + Math.PI / 5), 0, Math.cos(this.angle + Math.PI / 5)).normalize()
+            new THREE.Vector3(Math.sin(this.angle + Math.PI / 4), 0, Math.cos(this.angle + Math.PI / 4)).normalize()
         );
 
         let results = [];

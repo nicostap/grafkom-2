@@ -1,12 +1,10 @@
 import * as THREE from 'three';
 import { Clown } from './model/character';
 import { Input } from './input';
-import { NEAT, activation, crossover, mutate } from './neural/NEAT';
 import { AI } from './model/ai';
 import { MeshBVH } from 'three-mesh-bvh';
 import { acceleratedRaycast } from "three-mesh-bvh";
-import type Creature from './neural/Creature';
-import data from './modelNeural/model';
+import Population from './neural/population';
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
@@ -99,68 +97,40 @@ export function renderMain() {
     // Input
     const input = new Input();
 
-    // Neural
-    let neat: NEAT;
-    try {
-        let config = {
-            model: [
-                { nodeCount: 8, type: "input" },
-                { nodeCount: 16, type: "output", activationfunc: activation.SIGMOID }
-            ],
-            mutationRate: 0.15,
-            crossoverMethod: crossover.SLICE,
-            mutationMethod: mutate.RANDOM,
-            populationSize: 1
-        };
-        neat = new NEAT(config);
-        neat.import(data);
-        console.log(neat.populationSize);
-    } catch (e) {
-        console.log(e);
-        console.log("No imported model found");
-        let config = {
-            model: [
-                { nodeCount: 8, type: "input" },
-                { nodeCount: 16, type: "output", activationfunc: activation.RELU }
-            ],
-            mutationRate: 0.05,
-            crossoverMethod: crossover.SLICE,
-            mutationMethod: mutate.RANDOM,
-            populationSize: 250
-        };
-        neat = new NEAT(config);
-    }
+    // Neural v2
+    const population = new Population(100);
 
     // Neural Set Up
     let monsters: AI[] = [];
     let samePosition: number[] = [];
-    for (let i = 0; i < neat.populationSize; i++) {
+    for (let i = 0; i < population.size; i++) {
         monsters.push(new AI(scene));
         samePosition.push(1);
     }
 
-    // Neural
-    let target = new THREE.Vector3(3000, 0, 3000);
-    let origin = new THREE.Vector3(0, 0, 0);
-    let originAngle = 0;
-    let bestCreature: Creature;
-    let isFirstGenDone = false;
+    // Evolution
+    const targets = [
+        new THREE.Vector3(3000, 0, 3000),
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(1500, 0, 3000),
+        new THREE.Vector3(1500, 0, 2000),
+        new THREE.Vector3(2000, 0, 2500),
+        new THREE.Vector3(1000, 0, 1000),
+        new THREE.Vector3(3000, 0, 1500),
+    ];
+    let target = targets[0];
     const interval = setInterval(() => {
-        let aliveCount = 0;
-        for (let i = 0; i < neat.populationSize; i++) {
-            if (monsters[i].isAlive) aliveCount++;
-            else monsters[i].score *= 0.5;
-            neat.setFitness(monsters[i].score, i);
-            monsters[i].reset(...origin.toArray(), originAngle);
-            clown.object?.position.set(...origin.toArray());
-            clown.angle = originAngle;
+        for (let i = 0; i < population.size; i++) {
+            monsters[i].reset(
+                clown.object!.position.x,
+                clown.object!.position.y,
+                clown.object!.position.z,
+                clown.angle
+            );
         }
-        neat.doGen();
-        bestCreature = neat.bestCreature;
-        console.log(bestCreature.score);
-        console.log(aliveCount);
-        isFirstGenDone = true;
-    }, 20000);
+        population.naturalSelection();
+        if(population.generation % 10 == 9) target = targets[Math.floor(Math.random() * targets.length)];
+    }, 15000);
 
     // Animation
     let isTerminated = false;
@@ -180,58 +150,57 @@ export function renderMain() {
             time_prev = time;
 
             // AI
-            for (let i = 0; i < neat.populationSize; i++) {
-                if (!monsters[i].isAlive) continue;
+            let inputs = [];
+            for (let i = 0; i < population.size; i++) {
                 let sightResult = monsters[i].getDistanceToWall(walls);
-                neat.setInputs([
-                    NEAT.mapNumber(monsters[i].position.x, -250, 3250),
-                    NEAT.mapNumber(monsters[i].position.z, -250, 3250),
-                    NEAT.mapNumber(monsters[i].angle % (2 * Math.PI), 0, 2 * Math.PI),
-                    NEAT.mapNumber(target.x, -250, 3250),
-                    NEAT.mapNumber(target.z, -250, 3250),
-                    NEAT.mapNumber(sightResult[0], 30, monsters[i].sightLeft.far),
-                    NEAT.mapNumber(sightResult[1], 30, monsters[i].sight.far),
-                    NEAT.mapNumber(sightResult[2], 30, monsters[i].sightRight.far),
-                ], i);
+                inputs.push([
+                    Population.mapNumber(monsters[i].position.x, -250, 3250),
+                    Population.mapNumber(monsters[i].position.z, -250, 3250),
+                    Population.mapNumber(monsters[i].angle % (2 * Math.PI), 0, 2 * Math.PI),
+                    Population.mapNumber(target.x, -250, 3250),
+                    Population.mapNumber(target.z, -250, 3250),
+                    Population.mapNumber(sightResult[0], 30, monsters[i].sightLeft.far),
+                    Population.mapNumber(sightResult[1], 30, monsters[i].sight.far),
+                    Population.mapNumber(sightResult[2], 30, monsters[i].sightRight.far),
+                ]);
             }
-            neat.feedForward();
-            const decisions = neat.getDecisions();
-            for (let i = 0; i < neat.populationSize; i++) {
-                if (!monsters[i].isAlive) continue;
+            const decisions: any = population.update(inputs);
+            for (let i = 0; i < population.size; i++) {
+                if(decisions[i].length == 0) continue;
                 const prev_position = monsters[i].position.clone();
-                const input = decisions[i].toString(2).padStart(4, '0');
                 const inputPressed = {
-                    'w': input[0] == '1',
-                    'a': input[1] == '1',
-                    'd': input[2] == '1',
-                    ' ': input[3] == '1',
+                    'w': decisions[i][0] >= 0,
+                    'a': decisions[i][1] >= 0,
+                    'd': decisions[i][2] >= 0,
+                    ' ': decisions[i][3] >= 0,
                 }
                 monsters[i].run(dt, wallCollisionBoxes, inputPressed);
                 if(prev_position.equals(monsters[i].position)) samePosition[i] += 5;
                 else samePosition[i] = 1;
-                monsters[i].score += 20 / (samePosition[i] * monsters[i].position.distanceTo(target));
+                population.addScore(20 / (1 + samePosition[i] * monsters[i].position.distanceTo(target)), monsters[i].isAlive, i);
             }
+
             // Clown
             if (clown.object) {
-                if (isFirstGenDone) {
+                if (population.generation > 0) {
                     let sightResult = clown.getDistanceToWall(walls);
-                    bestCreature.setInputs([
-                        NEAT.mapNumber(clown.object.position.x, -250, 3250),
-                        NEAT.mapNumber(clown.object.position.z, -250, 3250),
-                        NEAT.mapNumber(clown.angle % (2 * Math.PI), 0, 2 * Math.PI),
-                        NEAT.mapNumber(target.x, -250, 3250),
-                        NEAT.mapNumber(target.z, -250, 3250),
-                        NEAT.mapNumber(sightResult[0], 30, clown.sightLeft.far),
-                        NEAT.mapNumber(sightResult[1], 30, clown.sight.far),
-                        NEAT.mapNumber(sightResult[2], 30, clown.sightRight.far),
+                    population.bestPlayer!.setInput([
+                        Population.mapNumber(clown.object.position.x, -250, 3250),
+                        Population.mapNumber(clown.object.position.z, -250, 3250),
+                        Population.mapNumber(clown.angle % (2 * Math.PI), 0, 2 * Math.PI),
+                        Population.mapNumber(target.x, -250, 3250),
+                        Population.mapNumber(target.z, -250, 3250),
+                        Population.mapNumber(sightResult[0], 30, clown.sightLeft.far),
+                        Population.mapNumber(sightResult[1], 30, clown.sight.far),
+                        Population.mapNumber(sightResult[2], 30, clown.sightRight.far),
                     ]);
-                    bestCreature.feedForward();
-                    const input = bestCreature.decision().toString(2).padStart(4, '0');
+                    population.bestPlayer!.feedForward();
+                    const decision = population.bestPlayer!.decisions;
                     const inputPressed = {
-                        'w': input[0] == '1',
-                        'a': input[1] == '1',
-                        'd': input[2] == '1',
-                        ' ': input[3] == '1',
+                        'w': decision[0] >= 0,
+                        'a': decision[1] >= 0,
+                        'd': decision[2] >= 0,
+                        ' ': decision[3] >= 0,
                     }
                     arrow.position.set(clown.sight.ray.origin.x, clown.sight.ray.origin.y, clown.sight.ray.origin.z);
                     arrowLeft.position.set(clown.sight.ray.origin.x, clown.sight.ray.origin.y, clown.sight.ray.origin.z);
@@ -241,13 +210,6 @@ export function renderMain() {
                     arrowRight.setDirection(clown.sightRight.ray.direction);
                     clown.run(dt, wallCollisionBoxes, inputPressed);
                 } else {
-                    // console.log(clown.getDistanceToWall(walls));
-                    // arrow.position.set(clown.sight.ray.origin.x, clown.sight.ray.origin.y, clown.sight.ray.origin.z);
-                    // arrowLeft.position.set(clown.sight.ray.origin.x, clown.sight.ray.origin.y, clown.sight.ray.origin.z);
-                    // arrowRight.position.set(clown.sight.ray.origin.x, clown.sight.ray.origin.y, clown.sight.ray.origin.z);
-                    // arrow.setDirection(clown.sight.ray.direction);
-                    // arrowLeft.setDirection(clown.sightLeft.ray.direction);
-                    // arrowRight.setDirection(clown.sightRight.ray.direction);
                     clown.run(dt, wallCollisionBoxes, input.keyPressed);
                 }
                 pLight.position.set(clown.object.position.x, 400, clown.object.position.z);
@@ -260,8 +222,6 @@ export function renderMain() {
                 );
                 camera.lookAt(clown.object.position.x, 150, clown.object.position.z);
             }
-
-            if (input.keyPressed['s']) console.log(neat.export());
 
             // Drawing scene   
             renderer.render(scene, camera);

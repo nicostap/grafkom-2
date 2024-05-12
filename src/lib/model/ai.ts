@@ -5,7 +5,6 @@ THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 export class AI {
     object: THREE.Mesh;
-    score = 0;
     v = 0;
     isAlive = true;
     angle = 0;
@@ -36,7 +35,6 @@ export class AI {
         this.playerSpeed = 2;
         this.angle = angle;
         this.v = 0;
-        this.score = 0;
         this.isAlive = true;
         (this.object.material as THREE.MeshBasicMaterial).color.setHex(0x0000FF);
     }
@@ -48,11 +46,11 @@ export class AI {
         );
         this.sightLeft.set(
             this.position,
-            new THREE.Vector3(Math.sin(this.angle - Math.PI / 5), 0, Math.cos(this.angle - Math.PI / 5)).normalize()
+            new THREE.Vector3(Math.sin(this.angle - Math.PI / 4), 0, Math.cos(this.angle - Math.PI / 4)).normalize()
         );
         this.sightRight.set(
             this.position,
-            new THREE.Vector3(Math.sin(this.angle + Math.PI / 5), 0, Math.cos(this.angle + Math.PI / 5)).normalize()
+            new THREE.Vector3(Math.sin(this.angle + Math.PI / 4), 0, Math.cos(this.angle + Math.PI / 4)).normalize()
         );
 
         let results = [];
