@@ -27,7 +27,6 @@ export default class Node {
 		if (this.layer != 0) //No activation function on input nodes
 			this.outputValue = this.activation(this.inputSum + this.bias);
 
-
 		this.outputConnections.forEach((conn) => {
 			if (conn.enabled) //Do not pass value if connection is disabled
 				conn.toNode.inputSum += conn.weight * this.outputValue; //Weighted output sum

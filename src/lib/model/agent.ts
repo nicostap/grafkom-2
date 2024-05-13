@@ -18,6 +18,7 @@ export class Agent {
     timeBeforePersonalBest = 0;
     time = 0;
     score = 0;
+    reachedTarget = false;
 
     constructor(scene: THREE.Scene, origin: THREE.Vector3, target: THREE.Vector3) {
         this.position = origin.clone();
@@ -47,6 +48,7 @@ export class Agent {
         this.timeBeforePersonalBest = 0;
         this.time = 0;
         this.score = 0;
+        this.reachedTarget = false;
     }
 
     getDistanceToWall(walls: THREE.Object3D[]) {
@@ -112,8 +114,9 @@ export class Agent {
         if(this.position.distanceTo(target) < this.personalBest) {
             this.personalBest = this.position.distanceTo(target);
             this.timeBeforePersonalBest = 0;
-            this.score = 1 / (Math.pow(this.personalBest, 3) + Math.pow(this.time, 1));
+            this.score = (this.reachedTarget ? 100 : 1) / (Math.pow(this.personalBest, 3) + Math.pow(this.time, 1));
         } else this.timeBeforePersonalBest += dt;
+        if(this.personalBest <= 40) this.reachedTarget = true;
         if(this.timeBeforePersonalBest > 7.5) {
             this.isAlive = false;
             (this.object.material as THREE.MeshBasicMaterial).color.setHex(0xFF0000);

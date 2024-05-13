@@ -6,6 +6,7 @@ import { MeshBVH } from 'three-mesh-bvh';
 import { acceleratedRaycast } from "three-mesh-bvh";
 import Population from './neural/population';
 import importJSON from './neural/import';
+import { cache } from 'three/examples/jsm/nodes/Nodes.js';
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
@@ -100,9 +101,27 @@ export function renderMain() {
     try {
         population = Population.import(importJSON)!;
     } catch (e) {
-        console.log("No import found!");
+        console.log("No import found!" + e);
         population = new Population(300);
     }
+
+    // Exporting
+    let cacheJSON: string;
+    const exportModel = () => {
+            let json = JSON.stringify(population, (key, value) => {
+                if (key == "toNode") return undefined;
+                else if (key == "fromNode") return undefined;
+                else if (key == "outputConnections") return undefined;
+                else if (key == "bestPlayer") return undefined;
+                return value;
+            });
+            cacheJSON = json;
+    }
+    window.addEventListener('keydown', (e) => {
+        if (e.key == 's') {
+            console.log(cacheJSON);
+        }
+    });
 
     // Evolution
     let isEvolveContinuos = false; // Buat training mode atau game mode
@@ -119,9 +138,20 @@ export function renderMain() {
     ];
     let target = targets[0];
     let origin = targets[1];
-    let targetReached = 0;
+    let targetReachedCount = 0;
+    let targetReachedGeneration = 0;
+    const randomiseTarget = () => {
+        target = targets[Math.floor(Math.random() * targets.length)];
+        console.log('Randomising target and origin : ' + targetReachedCount);
+        do {
+            origin = targets[Math.floor(Math.random() * targets.length)];
+            target = targets[Math.floor(Math.random() * targets.length)];
+        } while (origin.equals(target));
+    };
     const evolve = () => {
+        let targetReached = false;
         for (let i = 0; i < population.size; i++) {
+            if(monsters[i].reachedTarget) targetReached = true;
             if (isEvolveContinuos) {
                 monsters[i].reset(
                     clown.object!.position.x,
@@ -140,7 +170,17 @@ export function renderMain() {
                 clown.angle = 0;
             }
         }
+        if(targetReached) {
+            targetReachedGeneration++;
+            targetReachedCount++;
+        }
+        exportModel();
         population.naturalSelection();
+        if(targetReachedGeneration >= 5) {
+            randomiseTarget();
+            targetReachedGeneration = 0;
+            console.log(cacheJSON);
+        }
     };
     const maxEvolveTime = 30000;
     let interval = setInterval(evolve, maxEvolveTime);
@@ -153,24 +193,6 @@ export function renderMain() {
 
     // Clown
     let clown = new Clown(scene, origin);
-
-    // Exporting
-    window.addEventListener('keydown', (e) => {
-        if (e.key == 's') {
-            var cache: any[] | null = [];
-            let json = JSON.stringify(population, (key, value) => {
-                if (key == "toNode") return undefined;
-                else if (key == "fromNode") return undefined;
-                if (typeof value === 'object' && value !== null) {
-                    if (cache!.includes(value)) return;
-                    cache!.push(value);
-                }
-                return value;
-            });
-            cache = null;
-            console.log(json);
-        }
-    });
 
     // Animation
     let isTerminated = false;
@@ -222,20 +244,12 @@ export function renderMain() {
                     }
                     monsters[i].run(dt, wallCollisionBoxes, inputPressed, target);
                     population.setScore(monsters[i].score, monsters[i].isAlive, i);
+                    if (monsters[i].reachedTarget) {
+
+                    }
                 }
 
                 if (population.done()) {
-                    evolve();
-                    clearInterval(interval);
-                    interval = setInterval(evolve, maxEvolveTime);
-                } else if (clown.object!.position.distanceTo(target) < 70) {
-                    target = targets[Math.floor(Math.random() * targets.length)];
-                    targetReached++;
-                    console.log('Target reached : ' + targetReached);
-                    do {
-                        origin = targets[Math.floor(Math.random() * targets.length)];
-                        target = targets[Math.floor(Math.random() * targets.length)];
-                    } while (origin.equals(target));
                     evolve();
                     clearInterval(interval);
                     interval = setInterval(evolve, maxEvolveTime);

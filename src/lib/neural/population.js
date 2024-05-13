@@ -46,77 +46,26 @@ export default class Population {
 				inputNode.outputValue = data.population[i].brain.nodes[j].outputValue;
 
 				inputNode.outputConnections = [];
-
-				for (let k = 0; k < data.population[i].brain.nodes[k].outputConnections.length; k++) {
-					let inputConnection = new Connection();
-					inputConnection.weight = data.population[i].brain.nodes[k].outputConnections[k].weight;
-					inputConnection.enabled = data.population[i].brain.nodes[k].outputConnections[k].enabled;
-					inputConnection.fromNodeNumber = data.population[i].brain.nodes[k].outputConnections[k].fromNodeNumber;
-					inputConnection.toNodeNumber = data.population[i].brain.nodes[k].outputConnections[k].toNodeNumber;
-					inputNode.outputConnections.push(inputConnection);
-					inputGenome.connections.push(inputConnection);
-				}
-				inputGenome.nodes.push(inputNode);
+				inputGenome.nodes[inputNode.number] = inputNode;
 			}
 
-			for (let k = 0; k < inputGenome.connections.length; k++) {
-				inputGenome.connections[k].fromNode = inputGenome.nodes[inputGenome.connections[k].fromNodeNumber];
-				inputGenome.connections[k].toNode = inputGenome.nodes[inputGenome.connections[k].toNodeNumber];
+			for (let k = 0; k < data.population[i].brain.connections.length; k++) {
+				let inputConnection = new Connection();
+				inputConnection.fromNodeNumber = data.population[i].brain.connections[k].fromNodeNumber;
+				inputConnection.toNodeNumber = data.population[i].brain.connections[k].toNodeNumber;
+				inputConnection.weight = data.population[i].brain.connections[k].weight;
+				inputConnection.enabled = data.population[i].brain.connections[k].enabled;
+				inputConnection.fromNode = inputGenome.nodes[inputConnection.fromNodeNumber];
+				inputConnection.toNode = inputGenome.nodes[inputConnection.toNodeNumber];
+				inputGenome.nodes[inputConnection.fromNodeNumber].outputConnections.push(inputConnection);
+				inputGenome.connections.push(inputConnection);
 			}
 
 			inputPlayer.brain = inputGenome;
 			input.population.push(inputPlayer);
 		}
 
-		let inputPlayer = new Player();
-		inputPlayer.fitness = data.bestPlayer.fitness;
-		inputPlayer.score = data.bestPlayer.score;
-		inputPlayer.lifespan = data.bestPlayer.lifespan;
-		inputPlayer.dead = data.bestPlayer.dead;
-		inputPlayer.decisions = data.bestPlayer.decisions;
-		inputPlayer.vision = data.bestPlayer.vision;
-
-		let inputGenome = new Genome();
-		inputGenome.inputs = data.bestPlayer.brain.inputs;
-		inputGenome.outputs = data.bestPlayer.brain.outputs;
-		inputGenome.id = data.bestPlayer.brain.id;
-		inputGenome.layers = data.bestPlayer.brain.layers;
-		inputGenome.nextNode = data.bestPlayer.brain.nextNode;
-
-		inputGenome.nodes = [];
-		inputGenome.connections = [];
-		for (let j = 0; j < data.bestPlayer.brain.nodes.length; j++) {
-			let inputNode = new Node();
-			inputNode.number = data.bestPlayer.brain.nodes[j].number;
-			inputNode.layer = data.bestPlayer.brain.nodes[j].layer;
-			inputNode.activationFunction = data.bestPlayer.brain.nodes[j].activationFunction;
-			inputNode.bias = data.bestPlayer.brain.nodes[j].bias;
-			inputNode.output = data.bestPlayer.brain.nodes[j].output;
-			inputNode.inputSum = data.bestPlayer.brain.nodes[j].inputSum;
-			inputNode.outputValue = data.bestPlayer.brain.nodes[j].outputValue;
-
-			inputNode.outputConnections = [];
-
-			for (let k = 0; k < data.bestPlayer.brain.nodes[k].outputConnections.length; k++) {
-				let inputConnection = new Connection();
-				inputConnection.weight = data.bestPlayer.brain.nodes[k].outputConnections[k].weight;
-				inputConnection.enabled = data.bestPlayer.brain.nodes[k].outputConnections[k].enabled;
-				inputConnection.fromNodeNumber = data.bestPlayer.brain.nodes[k].outputConnections[k].fromNodeNumber;
-				inputConnection.toNodeNumber = data.bestPlayer.brain.nodes[k].outputConnections[k].toNodeNumber;
-				inputNode.outputConnections.push(inputConnection);
-				inputGenome.connections.push(inputConnection);
-			}
-			inputGenome.nodes.push(inputNode);
-		}
-
-		for (let i = 0; i < inputGenome.connections.length; i++) {
-			inputGenome.connections[i].fromNode = inputGenome.nodes[inputGenome.connections[i].fromNodeNumber];
-			inputGenome.connections[i].toNode = inputGenome.nodes[inputGenome.connections[i].toNodeNumber];
-		}
-
-		inputPlayer.brain = inputGenome;
-		input.bestPlayer = inputPlayer;
-
+		input.calculateFitness();
 		console.log('Successful import!');
 		return input;
 	}
@@ -159,7 +108,7 @@ export default class Population {
 	addScore(score, isAlive, index) {
 		this.population[index].addScore(score, isAlive);
 	}
-	
+
 	setScore(score, isAlive, index) {
 		this.population[index].setScore(score, isAlive);
 	}
@@ -217,7 +166,7 @@ export default class Population {
 			if (element.fitness > currentMax)
 				currentMax = element.fitness;
 		});
-		
+
 		//Normalize
 		this.population.forEach((element, elementN) => {
 			element.fitness /= currentMax;
