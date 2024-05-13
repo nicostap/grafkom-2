@@ -47,13 +47,20 @@ export default class Player{
 	}
 
 	addScore(score, isAlive){
+		this.dead = !isAlive;
 		if(this.dead) return;
 		this.score += score;
+	}
+
+	setScore(score, isAlive){
 		this.dead = !isAlive;
+		if(this.dead) return;
+		this.score = score;
 	}
 
 	calculateFitness(){
-		this.fitness = this.score;
+		this.fitness = this.score * this.score;
+		if(this.dead) this.fitness *= 0.5;
 		this.fitness /= this.brain.calculateWeight();
 	}
 }

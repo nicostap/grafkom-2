@@ -159,6 +159,10 @@ export default class Population {
 	addScore(score, isAlive, index) {
 		this.population[index].addScore(score, isAlive);
 	}
+	
+	setScore(score, isAlive, index) {
+		this.population[index].setScore(score, isAlive);
+	}
 
 	done() {
 		for (let i = 0; i < this.population.length; i++) {

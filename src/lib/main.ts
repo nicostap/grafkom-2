@@ -122,16 +122,17 @@ export function renderMain() {
     let targetReached = 0;
     const evolve = () => {
         for (let i = 0; i < population.size; i++) {
-            if(isEvolveContinuos) {
+            if (isEvolveContinuos) {
                 monsters[i].reset(
                     clown.object!.position.x,
                     clown.object!.position.y,
                     clown.object!.position.z,
-                    clown.angle
+                    clown.angle,
+                    target
                 )
             } else {
                 monsters[i].reset(
-                    ...origin.toArray(), 0
+                    ...origin.toArray(), 0, target
                 );
                 clown.object?.position.set(
                     ...origin.toArray()
@@ -147,7 +148,7 @@ export function renderMain() {
     // Neural Set Up
     let monsters: Agent[] = [];
     for (let i = 0; i < population.size; i++) {
-        monsters.push(new Agent(scene, origin));
+        monsters.push(new Agent(scene, origin, target));
     }
 
     // Clown
@@ -220,7 +221,7 @@ export function renderMain() {
                         ' ': decisions[i][3] > 0,
                     }
                     monsters[i].run(dt, wallCollisionBoxes, inputPressed, target);
-                    population.addScore((dt / 0.016) * 100 / (1000 * monsters[i].timeBeforePersonalBest + monsters[i].position.distanceTo(target)), monsters[i].isAlive, i);
+                    population.setScore(monsters[i].score, monsters[i].isAlive, i);
                 }
 
                 if (population.done()) {
@@ -234,7 +235,7 @@ export function renderMain() {
                     do {
                         origin = targets[Math.floor(Math.random() * targets.length)];
                         target = targets[Math.floor(Math.random() * targets.length)];
-                    } while(origin.equals(target));
+                    } while (origin.equals(target));
                     evolve();
                     clearInterval(interval);
                     interval = setInterval(evolve, maxEvolveTime);

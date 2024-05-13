@@ -14,11 +14,14 @@ export class Agent {
     sight: any = new THREE.Raycaster();
     sightLeft: any = new THREE.Raycaster();
     sightRight: any = new THREE.Raycaster();
-    personalBest = 99999;
+    personalBest: number;
     timeBeforePersonalBest = 0;
+    time = 0;
+    score = 0;
 
-    constructor(scene: THREE.Scene, origin: THREE.Vector3) {
+    constructor(scene: THREE.Scene, origin: THREE.Vector3, target: THREE.Vector3) {
         this.position = origin.clone();
+        this.personalBest = origin.distanceTo(target);
         this.sight.far = 3250;
         this.sightLeft.far = 3250;
         this.sightRight.far = 3250;
@@ -33,15 +36,17 @@ export class Agent {
         scene.add(this.object);
     }
 
-    reset(x: number, y: number, z: number, angle: number) {
+    reset(x: number, y: number, z: number, angle: number, target: THREE.Vector3) {
         this.position.set(x, y, z);
         this.playerSpeed = 2;
         this.angle = angle;
         this.v = 0;
         this.isAlive = true;
         (this.object.material as THREE.MeshBasicMaterial).color.setHex(0x0000FF);
-        this.personalBest = 99999;
+        this.personalBest = this.position.distanceTo(target);
         this.timeBeforePersonalBest = 0;
+        this.time = 0;
+        this.score = 0;
     }
 
     getDistanceToWall(walls: THREE.Object3D[]) {
@@ -103,9 +108,11 @@ export class Agent {
             }
         }
 
+        this.time += dt;
         if(this.position.distanceTo(target) < this.personalBest) {
             this.personalBest = this.position.distanceTo(target);
             this.timeBeforePersonalBest = 0;
+            this.score = 1 / (Math.pow(this.personalBest, 3) + Math.pow(this.time, 1));
         } else this.timeBeforePersonalBest += dt;
         if(this.timeBeforePersonalBest > 7.5) {
             this.isAlive = false;
