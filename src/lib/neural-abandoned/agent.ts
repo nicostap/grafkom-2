@@ -17,12 +17,14 @@ export class Agent {
     personalBest: number;
     timeBeforePersonalBest = 0;
     time = 0;
-    score = 0;
+    score;
+    lifespan = 0;
     reachedTarget = false;
 
     constructor(scene: THREE.Scene, origin: THREE.Vector3, target: THREE.Vector3) {
         this.position = origin.clone();
         this.personalBest = origin.distanceTo(target);
+        this.score = Math.pow(this.personalBest / 1000, 2);
         this.sight.far = 3250;
         this.sightLeft.far = 3250;
         this.sightRight.far = 3250;
@@ -47,8 +49,9 @@ export class Agent {
         this.personalBest = this.position.distanceTo(target);
         this.timeBeforePersonalBest = 0;
         this.time = 0;
-        this.score = 0;
+        this.score = Math.pow(this.personalBest / 1000, 2);
         this.reachedTarget = false;
+        this.lifespan = 0;
     }
 
     getDistanceToWall(walls: THREE.Object3D[]) {
@@ -102,7 +105,7 @@ export class Agent {
         this.collisionSphere = new THREE.Sphere(this.position, 35);
 
         for (let wallCollisionBox of wallCollisionBoxes) {
-            if (this.collisionSphere?.intersectsBox(wallCollisionBox)) {
+            if (this.collisionSphere?.intersectsBox(wallCollisionBox) && this.isAlive) {
                 this.position.x = prev_position.x;
                 this.position.z = prev_position.z;
                 this.isAlive = false;
@@ -114,12 +117,16 @@ export class Agent {
         if(this.position.distanceTo(target) < this.personalBest) {
             this.personalBest = this.position.distanceTo(target);
             this.timeBeforePersonalBest = 0;
-            this.score = (this.reachedTarget ? 100 : 1) / (Math.pow(this.personalBest, 3) + Math.pow(this.time, 1));
+            this.score = Math.pow(this.personalBest / 1000, 3) + this.time;
         } else this.timeBeforePersonalBest += dt;
+
         if(this.personalBest <= 40) this.reachedTarget = true;
-        if(this.timeBeforePersonalBest > 7.5) {
+
+        if(this.timeBeforePersonalBest > 5 && this.isAlive) {
             this.isAlive = false;
             (this.object.material as THREE.MeshBasicMaterial).color.setHex(0xFF0000);
         }
+
+        if(this.isAlive) this.lifespan = this.time;
     }
 }

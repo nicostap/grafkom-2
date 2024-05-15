@@ -11,7 +11,7 @@ export default class Player{
 	constructor(id){
 		this.fitness;
 		this.score = 1;
-		this.lifespan = 0;
+		this.lifespan = 1;
 		this.dead = false;
 		this.decisions = []; // Current Output values
 		this.vision = []; // Current input values
@@ -59,8 +59,8 @@ export default class Player{
 	}
 
 	calculateFitness(){
-		this.fitness = this.score * this.score;
-		if(this.dead) this.fitness *= 0.5;
-		this.fitness /= this.brain.calculateWeight();
+		this.fitness = (10000 / (this.score * this.score));
+		if(this.dead) this.fitness *= 0.01;
+		this.fitness *= this.brain.calculateWeight();
 	}
 }

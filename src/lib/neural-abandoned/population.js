@@ -113,6 +113,10 @@ export default class Population {
 		this.population[index].setScore(score, isAlive);
 	}
 
+	setLifespan(lifespan, index) {
+		this.population[index].lifespan = lifespan;
+	}
+
 	done() {
 		for (let i = 0; i < this.population.length; i++) {
 			if (!this.population[i].dead) {
