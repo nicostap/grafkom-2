@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { FBXLoader } from "three/examples/jsm/Addons.js";
+import manager from '../loading';
 
 abstract class Character {
-    loader = new FBXLoader();
+    loader = new FBXLoader(manager);
     loaded: boolean = false;
     onProgress = (xhr: any) => {
         if (xhr.lengthComputable) {

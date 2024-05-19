@@ -3,6 +3,7 @@ import { Clown, Victim } from './model/character';
 import { Input } from './input';
 import { MeshBVH } from 'three-mesh-bvh';
 import { acceleratedRaycast } from "three-mesh-bvh";
+import manager, { isFinished } from './loading';
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
@@ -56,7 +57,7 @@ export function renderMain() {
         [0, 1, 1, 1, 1, 1, 1, 1, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0],
     ];
-    const textureLoader = new THREE.TextureLoader();
+    const textureLoader = new THREE.TextureLoader(manager);
     const texture = textureLoader.load('./assets/wallpaper/floor.jpg');
     const displacement = textureLoader.load('./assets/cobblestone/floor_displace.jpg');
     const wallpaperTexture = textureLoader.load('./assets/wallpaper/texture.jpg');
@@ -113,7 +114,7 @@ export function renderMain() {
     const input = new Input();
 
     // Clown
-    let clown = new Clown(scene, new THREE.Vector3(2500, 0, 3000));
+    let clown = new Clown(scene, new THREE.Vector3(0, 0, 0));
     let target = new THREE.Vector3(1500, 0, 3000);
 
     // Victim
@@ -172,7 +173,6 @@ export function renderMain() {
                 } else if(sightResults[1] <= 240) {
                   if(sightResults[0] < sightResults[2]) inputClown.d = true;
                   else inputClown.a = true; 
-                  console.log(sightResults);
                 } else {
                     let distVector = new THREE.Vector3();
                     distVector.subVectors(target, clown.object.position).normalize();
@@ -224,8 +224,8 @@ export function renderMain() {
             }
 
             // Gameover
-            if(victim.object && clown.object && victim.collisionSphere && clown.collisionSphere) {
-                if(victim.collisionSphere.intersectsSphere(clown.collisionSphere)) {
+            if(victim.object && clown.object) {
+                if(clown.object.position.distanceTo(victim.object.position) < 45) {
                     camera.position.set(clown.object.position.x + 40 * Math.sin(clown.angle), 185, clown.object.position.z + 40 * Math.cos(clown.angle));
                     clown.crossFade(clown.currentState, 'Idle', 0.01);
                     camera.lookAt(clown.object.position.x, 185, clown.object.position.z)
@@ -234,11 +234,18 @@ export function renderMain() {
                 }
             }
 
+            console.log(clown.object?.position);
+
             // Drawing scene   
             renderer.render(scene, camera);
             requestAnimationFrame(animate);
         }
-        requestAnimationFrame(animate);
+
+        const startAnimation = () => {
+            if(!isFinished) setTimeout(startAnimation, 500);
+            else requestAnimationFrame(animate);
+        }
+        startAnimation();
     }
 
     return () => {
