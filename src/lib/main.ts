@@ -113,7 +113,7 @@ export function renderMain() {
     const input = new Input();
 
     // Clown
-    let clown = new Clown(scene, new THREE.Vector3(0, 0, 0));
+    let clown = new Clown(scene, new THREE.Vector3(2500, 0, 3000));
     let target = new THREE.Vector3(1500, 0, 3000);
 
     // Victim
@@ -124,11 +124,12 @@ export function renderMain() {
     let cameraAngle = 0;
     let cameraDistance = 200;
     let defaultCameraDistance = 200;
-    let cameraModes = {"FPS": 1, "TPS": 2};
+    let cameraModes = {"FPS": 1, "TPS": 2, "OVER":3};
     let cameraMode = cameraModes.TPS;
 
     window.addEventListener('keydown', (e) => {
         if(e.key.toLowerCase() == 'x') {
+            if(cameraMode == cameraModes.OVER) return false;
             if(clown.object) {
                 cameraMode = cameraMode == cameraModes.FPS ? cameraModes.TPS : cameraModes.FPS;
                 if(cameraMode == cameraModes.TPS) {
@@ -162,7 +163,7 @@ export function renderMain() {
                         inputClown.w = false;
                     }
                 }
-                if(clown.object.position.distanceTo(target) < 10) inputClown.w = false;
+                if(clown.object.position.distanceTo(target) < 35) inputClown.w = false;
                 let sightResults = clown.getDistanceToWall(walls);
                 if(sightResults[0] <= 240 && sightResults[0] < sightResults[2]) {
                     inputClown.d = true;
@@ -219,6 +220,17 @@ export function renderMain() {
                         victim.object.position.z
                     );
                     camera.rotation.set(0, victim.angle + Math.PI, 0);
+                }
+            }
+
+            // Gameover
+            if(victim.object && clown.object && victim.collisionSphere && clown.collisionSphere) {
+                if(victim.collisionSphere.intersectsSphere(clown.collisionSphere)) {
+                    camera.position.set(clown.object.position.x + 40 * Math.sin(clown.angle), 185, clown.object.position.z + 40 * Math.cos(clown.angle));
+                    clown.crossFade(clown.currentState, 'Idle', 0.01);
+                    camera.lookAt(clown.object.position.x, 185, clown.object.position.z)
+                    victim.object.visible = false;
+                    cameraMode = cameraModes.OVER;
                 }
             }
 

@@ -13,7 +13,6 @@ abstract class Character {
     };
 
     object: THREE.Group<THREE.Object3DEventMap> | undefined;
-    collisionSphere: THREE.Sphere | undefined;
     mixer: THREE.AnimationMixer | undefined;
     actions: { [state: string]: THREE.AnimationAction } = {};
     currentState = '';
@@ -82,6 +81,8 @@ abstract class Player extends Character {
 
     walkingSpeed = 2;
     runningSpeed = 4;
+
+    collisionSphere: THREE.Sphere | undefined;
 
     constructor() {
         super();
