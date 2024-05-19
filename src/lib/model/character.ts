@@ -75,10 +75,53 @@ abstract class Character {
     }
 }
 
-export class Clown extends Character {
+abstract class Player extends Character {
     v = 0;
     angle = 0;
     playerSpeed = 2;
+
+    walkingSpeed = 2;
+    runningSpeed = 4;
+
+    constructor() {
+        super();
+    }
+
+    run(dt: number, collisionTargets: THREE.Box3[], keyPressed: { [key: string]: boolean }) {
+        if (keyPressed['w']) {
+            this.v = 1;
+        } else {
+            this.v = 0;
+        }
+        if (keyPressed['a']) {
+            this.angle += (dt / 0.016) * 2 * Math.PI / 180;
+        }
+        if (keyPressed['d']) {
+            this.angle -= (dt / 0.016) * 2 * Math.PI / 180;
+        }
+        if (keyPressed[' ']) {
+            this.playerSpeed = this.runningSpeed;
+        } else {
+            this.playerSpeed = this.walkingSpeed;
+        }
+
+        let prev_position = this.object?.position.clone();
+        super.run(dt, collisionTargets, keyPressed);
+        this.object?.rotation.set(0, this.angle, 0);
+        this.object?.position.add(new THREE.Vector3((dt / 0.016) * this.playerSpeed * this.v * Math.sin(this.angle), 0, (dt / 0.016) * this.playerSpeed * this.v * Math.cos(this.angle)));
+        this.collisionSphere = new THREE.Sphere(this.object?.position, 30);
+
+        if (prev_position) {
+            for (let collisionTarget of collisionTargets) {
+                if (this.collisionSphere?.intersectsBox(collisionTarget)) {
+                    this.object?.position.set(prev_position?.x, prev_position?.y, prev_position?.z);
+                }
+            }
+        }
+    }
+}
+
+export class Clown extends Player {
     sight: any = new THREE.Raycaster();
     sightLeft: any = new THREE.Raycaster();
     sightRight: any = new THREE.Raycaster();
@@ -102,48 +145,18 @@ export class Clown extends Character {
         );
         this.sightLeft.set(
             new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(Math.sin(this.angle - Math.PI / 4), 0, Math.cos(this.angle - Math.PI / 4)).normalize()
+            new THREE.Vector3(Math.sin(this.angle + Math.PI / 4), 0, Math.cos(this.angle + Math.PI / 4)).normalize()
         );
         this.sightRight.set(
             new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(Math.sin(this.angle + Math.PI / 4), 0, Math.cos(this.angle + Math.PI / 4)).normalize()
+            new THREE.Vector3(Math.sin(this.angle - Math.PI / 4), 0, Math.cos(this.angle - Math.PI / 4)).normalize()
         );
     }
 
     run(dt: number, collisionTargets: THREE.Box3[], keyPressed: { [key: string]: boolean }) {
-        if (keyPressed['w']) {
-            this.v = 1;
-        } else {
-            this.v = 0;
-        }
-        if (keyPressed['a']) {
-            this.angle += (dt / 0.016) * 3 * Math.PI / 180;
-        }
-        if (keyPressed['d']) {
-            this.angle -= (dt / 0.016) * 3 * Math.PI / 180;
-        }
-        if (keyPressed[' ']) {
-            this.playerSpeed = 6;
-        } else {
-            this.playerSpeed = 2;
-        }
-
-        let prev_position = this.object?.position.clone();
         super.run(dt, collisionTargets, keyPressed);
-        this.object?.rotation.set(0, this.angle, 0);
-        this.object?.position.add(new THREE.Vector3((dt / 0.016) * this.playerSpeed * this.v * Math.sin(this.angle), 0, (dt / 0.016) * this.playerSpeed * this.v * Math.cos(this.angle)));
-        this.collisionSphere = new THREE.Sphere(this.object?.position, 45);
-
-        if (prev_position) {
-            for (let collisionTarget of collisionTargets) {
-                if (this.collisionSphere?.intersectsBox(collisionTarget)) {
-                    this.object?.position.set(prev_position?.x, prev_position?.y, prev_position?.z);
-                }
-            }
-        }
-
         if (this.v == 0) this.crossFade(this.currentState, 'Idle', 0.1);
-        else if (this.playerSpeed == 2) this.crossFade(this.currentState, 'Walking', 0.1);
+        else if (this.playerSpeed == this.walkingSpeed) this.crossFade(this.currentState, 'Walking', 0.1);
         else this.crossFade(this.currentState, 'Running', 0.1);
     }
 
@@ -154,11 +167,11 @@ export class Clown extends Character {
         );
         this.sightLeft.set(
             this.object!.position,
-            new THREE.Vector3(Math.sin(this.angle - Math.PI / 4), 0, Math.cos(this.angle - Math.PI / 4)).normalize()
+            new THREE.Vector3(Math.sin(this.angle + Math.PI / 4), 0, Math.cos(this.angle + Math.PI / 4)).normalize()
         );
         this.sightRight.set(
             this.object!.position,
-            new THREE.Vector3(Math.sin(this.angle + Math.PI / 4), 0, Math.cos(this.angle + Math.PI / 4)).normalize()
+            new THREE.Vector3(Math.sin(this.angle - Math.PI / 4), 0, Math.cos(this.angle - Math.PI / 4)).normalize()
         );
 
         let results = [];
@@ -172,6 +185,26 @@ export class Clown extends Character {
         if (intersects.length == 0) results.push(this.sightRight.far);
         else results.push(intersects[0].distance);
         return results;
+    }
+}
+
+export class Victim extends Player {
+    constructor(scene: THREE.Scene, origin: THREE.Vector3) {
+        super();
+        this.loadObjectFBX(scene, './assets/victimRunning.fbx', origin);
+        this.loadAnimationFBX('Idle', './assets/victimIdle.fbx');
+        this.loadAnimationFBX('Running', './assets/victimRunning.fbx');
+        this.loadAnimationFBX('Walking', './assets/victimWalking.fbx');
+        this.setInitState('Idle');
+        this.walkingSpeed = 3;
+        this.runningSpeed = 9;
+    }
+
+    run(dt: number, collisionTargets: THREE.Box3[], keyPressed: { [key: string]: boolean }) {
+        super.run(dt, collisionTargets, keyPressed);
+        if (this.v == 0) this.crossFade(this.currentState, 'Idle', 0.1);
+        else if (this.playerSpeed == this.walkingSpeed) this.crossFade(this.currentState, 'Walking', 0.1);
+        else this.crossFade(this.currentState, 'Running', 0.1);
     }
 }
 

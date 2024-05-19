@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Clown } from './model/character';
+import { Clown, Victim } from './model/character';
 import { Input } from './input';
 import { MeshBVH } from 'three-mesh-bvh';
 import { acceleratedRaycast } from "three-mesh-bvh";
@@ -13,6 +13,26 @@ class BoundedGeometry extends THREE.BufferGeometry {
         this.copy(bg);
         this.boundsTree = new MeshBVH(this as THREE.BufferGeometry);
     };
+}
+
+function radToDeg(rad: number) { return rad * (180 / Math.PI); }
+
+function vectorAngle(x: number, y: number) {
+    if (x == 0)
+        return (y > 0)? 90
+            : (y == 0)? 0
+            : 270;
+    else if (y == 0)
+        return (x >= 0)? 0
+            : 180;
+    let ret = radToDeg(Math.atan(y / x));
+    if (x < 0 && y < 0)
+        ret = 180 + ret;
+    else if (x < 0)
+        ret = 180 + ret;
+    else if (y < 0)
+        ret = 270 + (90 + ret);
+    return ret;
 }
 
 export function renderMain() {
@@ -93,8 +113,11 @@ export function renderMain() {
     const input = new Input();
 
     // Clown
-    let origin = new THREE.Vector3(0, 0, 0);
-    let clown = new Clown(scene, origin);
+    let clown = new Clown(scene, new THREE.Vector3(0, 0, 0));
+    let target = new THREE.Vector3(1500, 0, 3000);
+
+    // Victim
+    let victim = new Victim(scene, new THREE.Vector3(3000, 0, 3000));
 
     // Animation
     let isTerminated = false;
@@ -108,12 +131,11 @@ export function renderMain() {
         if(e.key.toLowerCase() == 'x') {
             if(clown.object) {
                 cameraMode = cameraMode == cameraModes.FPS ? cameraModes.TPS : cameraModes.FPS;
-                if(cameraMode == cameraModes.FPS) {
-                    clown.object.visible = false;
-                }
-                else {
-                    cameraAngle = clown.angle;
-                    clown.object.visible = true;
+                if(cameraMode == cameraModes.TPS) {
+                    cameraAngle = victim.angle;
+                    victim.object!.visible = true;
+                } else {
+                    victim.object!.visible = false;
                 }
             }
         }
@@ -129,36 +151,74 @@ export function renderMain() {
 
             // Clown
             if (clown.object) {
-                clown.run(dt, wallCollisionBoxes, input.keyPressed);
-                pLight.position.set(clown.object.position.x, 400, clown.object.position.z);
+                // Pathfinding Logic
+                let inputClown = {'w': true, 'a': false, 'd': false, ' ': true};
+                let nposition = clown.object.position.clone();
+                nposition.add(new THREE.Vector3((dt / 0.016) * 45 * Math.sin(clown.angle), 0, (dt / 0.016) * 45 * Math.cos(clown.angle)));
+                
+                let ncollision = new THREE.Sphere(nposition, 45);
+                for(let collisionTarget of wallCollisionBoxes) {
+                    if(ncollision.intersectsBox(collisionTarget)) {
+                        inputClown.w = false;
+                    }
+                }
+                if(clown.object.position.distanceTo(target) < 10) inputClown.w = false;
+                let sightResults = clown.getDistanceToWall(walls);
+                if(sightResults[0] <= 240 && sightResults[0] < sightResults[2]) {
+                    inputClown.d = true;
+                } else if(sightResults[2] <= 240 && sightResults[0] > sightResults[2]) {
+                    inputClown.a = true;
+                } else if(sightResults[1] <= 240) {
+                  if(sightResults[0] < sightResults[2]) inputClown.d = true;
+                  else inputClown.a = true; 
+                  console.log(sightResults);
+                } else {
+                    let distVector = new THREE.Vector3();
+                    distVector.subVectors(target, clown.object.position).normalize();
+                    let distAngle = vectorAngle(distVector.z, distVector.x);
+                    let subAngle = ((distAngle % 360) - (radToDeg(clown.angle) % 360) + 360) % 360; 
+                    if(subAngle < 180) {
+                        inputClown.a = true;
+                    } else {
+                        inputClown.d = true;
+                    }
+                }
 
+                clown.run(dt, wallCollisionBoxes, inputClown);
+            }
+
+            // Victim
+            if(victim.object) {
+                target = victim.object.position.clone();
+                victim.object.scale.set(1.2, 1.2, 1.2);
+                victim.run(dt, wallCollisionBoxes, input.keyPressed);
+                pLight.position.set(victim.object.position.x, 400, victim.object.position.z);
                 if(cameraMode == cameraModes.TPS) {
                     if (input.keyPressed['q']) cameraAngle += 3 * Math.PI / 180;
                     if (input.keyPressed['e']) cameraAngle -= 3 * Math.PI / 180;
-
                     // To Prevent Camera Clipping
                     cameraDistance = defaultCameraDistance;
                     let cameraClipped;
                     do {
                         cameraClipped = false;
                         camera.position.set(
-                            clown.object.position.x - cameraDistance * Math.sin(cameraAngle),
-                            150 + clown.object.position.y + cameraDistance * Math.sin(Math.PI / 9),
-                            clown.object.position.z - cameraDistance * Math.cos(cameraAngle)
+                            victim.object.position.x - cameraDistance * Math.sin(cameraAngle),
+                            150 + victim.object.position.y + cameraDistance * Math.sin(Math.PI / 9),
+                            victim.object.position.z - cameraDistance * Math.cos(cameraAngle)
                         );
                         for(let collisionTarget of wallCollisionBoxes) {
                             if(collisionTarget.containsPoint(camera.position)) cameraClipped = true;
                         }
                         cameraDistance -= 2;
                     } while(cameraClipped);
-                    camera.lookAt(clown.object.position.x, 150, clown.object.position.z);
+                    camera.lookAt(victim.object.position.x, 150, victim.object.position.z);
                 } else if(cameraMode == cameraModes.FPS) {
                     camera.position.set(
-                        clown.object.position.x,
+                        victim.object.position.x,
                         185,
-                        clown.object.position.z
+                        victim.object.position.z
                     );
-                    camera.rotation.set(0, clown.angle + Math.PI, 0);
+                    camera.rotation.set(0, victim.angle + Math.PI, 0);
                 }
             }
 
