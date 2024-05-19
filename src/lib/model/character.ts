@@ -132,7 +132,7 @@ export class Clown extends Character {
         super.run(dt, collisionTargets, keyPressed);
         this.object?.rotation.set(0, this.angle, 0);
         this.object?.position.add(new THREE.Vector3((dt / 0.016) * this.playerSpeed * this.v * Math.sin(this.angle), 0, (dt / 0.016) * this.playerSpeed * this.v * Math.cos(this.angle)));
-        this.collisionSphere = new THREE.Sphere(this.object?.position, 35);
+        this.collisionSphere = new THREE.Sphere(this.object?.position, 45);
 
         if (prev_position) {
             for (let collisionTarget of collisionTargets) {

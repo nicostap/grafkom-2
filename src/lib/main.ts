@@ -99,6 +99,26 @@ export function renderMain() {
     // Animation
     let isTerminated = false;
     let cameraAngle = 0;
+    let cameraDistance = 200;
+    let defaultCameraDistance = 200;
+    let cameraModes = {"FPS": 1, "TPS": 2};
+    let cameraMode = cameraModes.TPS;
+
+    window.addEventListener('keydown', (e) => {
+        if(e.key.toLowerCase() == 'x') {
+            if(clown.object) {
+                cameraMode = cameraMode == cameraModes.FPS ? cameraModes.TPS : cameraModes.FPS;
+                if(cameraMode == cameraModes.FPS) {
+                    clown.object.visible = false;
+                }
+                else {
+                    cameraAngle = clown.angle;
+                    clown.object.visible = true;
+                }
+            }
+        }
+    });
+
     {
         var time_prev = 0;
         function animate(time: number) {
@@ -111,14 +131,35 @@ export function renderMain() {
             if (clown.object) {
                 clown.run(dt, wallCollisionBoxes, input.keyPressed);
                 pLight.position.set(clown.object.position.x, 400, clown.object.position.z);
-                if (input.keyPressed['q']) cameraAngle += 3 * Math.PI / 180;
-                if (input.keyPressed['e']) cameraAngle -= 3 * Math.PI / 180;
-                camera.position.set(
-                    clown.object.position.x - 200 * Math.sin(cameraAngle),
-                    200,
-                    clown.object.position.z - 200 * Math.cos(cameraAngle)
-                );
-                camera.lookAt(clown.object.position.x, 150, clown.object.position.z);
+
+                if(cameraMode == cameraModes.TPS) {
+                    if (input.keyPressed['q']) cameraAngle += 3 * Math.PI / 180;
+                    if (input.keyPressed['e']) cameraAngle -= 3 * Math.PI / 180;
+
+                    // To Prevent Camera Clipping
+                    cameraDistance = defaultCameraDistance;
+                    let cameraClipped;
+                    do {
+                        cameraClipped = false;
+                        camera.position.set(
+                            clown.object.position.x - cameraDistance * Math.sin(cameraAngle),
+                            150 + clown.object.position.y + cameraDistance * Math.sin(Math.PI / 9),
+                            clown.object.position.z - cameraDistance * Math.cos(cameraAngle)
+                        );
+                        for(let collisionTarget of wallCollisionBoxes) {
+                            if(collisionTarget.containsPoint(camera.position)) cameraClipped = true;
+                        }
+                        cameraDistance -= 2;
+                    } while(cameraClipped);
+                    camera.lookAt(clown.object.position.x, 150, clown.object.position.z);
+                } else if(cameraMode == cameraModes.FPS) {
+                    camera.position.set(
+                        clown.object.position.x,
+                        185,
+                        clown.object.position.z
+                    );
+                    camera.rotation.set(0, clown.angle + Math.PI, 0);
+                }
             }
 
             // Drawing scene   
