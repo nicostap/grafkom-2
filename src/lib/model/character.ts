@@ -92,6 +92,8 @@ abstract class Player extends Character {
     run(dt: number, collisionTargets: THREE.Box3[], keyPressed: { [key: string]: boolean }) {
         if (keyPressed['w']) {
             this.v = 1;
+        } else if (keyPressed['s']) {
+            this.v = -1;
         } else {
             this.v = 0;
         }
@@ -101,7 +103,7 @@ abstract class Player extends Character {
         if (keyPressed['d']) {
             this.angle -= (dt / 0.016) * 2 * Math.PI / 180;
         }
-        if (keyPressed[' ']) {
+        if (keyPressed[' '] && keyPressed['w']) {
             this.playerSpeed = this.runningSpeed;
         } else {
             this.playerSpeed = this.walkingSpeed;
@@ -197,6 +199,7 @@ export class Victim extends Player {
         this.loadAnimationFBX('Idle', './assets/victimIdle.fbx');
         this.loadAnimationFBX('Running', './assets/victimRunning.fbx');
         this.loadAnimationFBX('Walking', './assets/victimWalking.fbx');
+        this.loadAnimationFBX('WalkingBack', './assets/victimBackWalking.fbx');
         this.setInitState('Idle');
         this.walkingSpeed = 3;
         this.runningSpeed = 9;
@@ -204,7 +207,8 @@ export class Victim extends Player {
 
     run(dt: number, collisionTargets: THREE.Box3[], keyPressed: { [key: string]: boolean }) {
         super.run(dt, collisionTargets, keyPressed);
-        if (this.v == 0) this.crossFade(this.currentState, 'Idle', 0.1);
+        if (this.v == -1) this.crossFade(this.currentState, 'WalkingBack', 0.1);
+        else if (this.v == 0) this.crossFade(this.currentState, 'Idle', 0.1);
         else if (this.playerSpeed == this.walkingSpeed) this.crossFade(this.currentState, 'Walking', 0.1);
         else this.crossFade(this.currentState, 'Running', 0.1);
     }

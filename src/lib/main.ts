@@ -197,6 +197,8 @@ export function renderMain() {
                 if(cameraMode == cameraModes.TPS) {
                     if (input.keyPressed['q']) cameraAngle += 3 * Math.PI / 180;
                     if (input.keyPressed['e']) cameraAngle -= 3 * Math.PI / 180;
+                    if (input.keyPressed['a']) cameraAngle += (dt / 0.016) * 2 * Math.PI / 180;
+                    if (input.keyPressed['d']) cameraAngle -= (dt / 0.016) * 2 * Math.PI / 180;
                     // To Prevent Camera Clipping
                     cameraDistance = defaultCameraDistance;
                     let cameraClipped;
