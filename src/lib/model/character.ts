@@ -22,7 +22,7 @@ abstract class Character {
         this.mixer?.update(dt);
     }
 
-    loadObjectFBX(scene: THREE.Scene, url: string, position?: THREE.Vector3) {
+    loadObjectFBX(scene: THREE.Scene, url: string) {
         this.loader.load(url, (object) => {
             this.mixer = new THREE.AnimationMixer(object);
             object.traverse(function (child) {
@@ -33,7 +33,6 @@ abstract class Character {
             });
             scene.add(object);
             this.object = object;
-            if(position !== undefined) this.object.position.set(position.x, position.y, position.z);
         }, this.onProgress);
     }
 
@@ -113,7 +112,7 @@ abstract class Player extends Character {
         super.run(dt, collisionTargets, keyPressed);
         this.object?.rotation.set(0, this.angle, 0);
         this.object?.position.add(new THREE.Vector3((dt / 0.016) * this.playerSpeed * this.v * Math.sin(this.angle), 0, (dt / 0.016) * this.playerSpeed * this.v * Math.cos(this.angle)));
-        this.collisionSphere = new THREE.Sphere(this.object?.position, 30);
+        this.collisionSphere = new THREE.Sphere(this.object?.position, 40);
 
         if (prev_position) {
             for (let collisionTarget of collisionTargets) {
@@ -130,9 +129,9 @@ export class Clown extends Player {
     sightLeft: any = new THREE.Raycaster();
     sightRight: any = new THREE.Raycaster();
 
-    constructor(scene: THREE.Scene, origin: THREE.Vector3) {
+    constructor(scene: THREE.Scene) {
         super();
-        this.loadObjectFBX(scene, './assets/clownRunning.fbx', origin);
+        this.loadObjectFBX(scene, './assets/clownRunning.fbx');
         this.loadAnimationFBX('Idle', './assets/clownIdle.fbx');
         this.loadAnimationFBX('Running', './assets/clownRunning.fbx');
         this.loadAnimationFBX('Walking', './assets/clownWalking.fbx');
@@ -193,9 +192,9 @@ export class Clown extends Player {
 }
 
 export class Victim extends Player {
-    constructor(scene: THREE.Scene, origin: THREE.Vector3) {
+    constructor(scene: THREE.Scene) {
         super();
-        this.loadObjectFBX(scene, './assets/victimRunning.fbx', origin);
+        this.loadObjectFBX(scene, './assets/victimRunning.fbx');
         this.loadAnimationFBX('Idle', './assets/victimIdle.fbx');
         this.loadAnimationFBX('Running', './assets/victimRunning.fbx');
         this.loadAnimationFBX('Walking', './assets/victimWalking.fbx');
