@@ -3,12 +3,10 @@ import { FBXLoader } from "three/examples/jsm/Addons.js";
 import manager from '../loading';
 
 abstract class Character {
-    loader = new FBXLoader(manager);
-    loaded: boolean = false;
+    static loader = new FBXLoader(manager);
     onProgress = (xhr: any) => {
         if (xhr.lengthComputable) {
             let percentComplete = xhr.loaded / xhr.total * 100;
-            if (percentComplete == 100) this.loaded = true;
             // console.log(percentComplete.toFixed(2) + '% downloaded');
         }
     };
@@ -23,7 +21,7 @@ abstract class Character {
     }
 
     loadObjectFBX(scene: THREE.Scene, url: string) {
-        this.loader.load(url, (object) => {
+        Character.loader.load(url, (object) => {
             this.mixer = new THREE.AnimationMixer(object);
             object.traverse(function (child) {
                 if ((<THREE.Mesh>child).isMesh) {
@@ -38,7 +36,7 @@ abstract class Character {
 
     loadAnimationFBX(state: string, url: string) {
         if (typeof this.mixer !== "undefined") {
-            this.loader.load(url, (object) => {
+            Character.loader.load(url, (object) => {
                 const action = this.mixer!.clipAction(object.animations[0]);
                 action.clampWhenFinished = true;
                 action.play();
