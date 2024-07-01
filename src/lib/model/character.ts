@@ -197,6 +197,11 @@ export class Victim extends Player {
         this.loadAnimationFBX('Running', './assets/victimRunning.fbx');
         this.loadAnimationFBX('Walking', './assets/victimWalking.fbx');
         this.loadAnimationFBX('WalkingBack', './assets/victimBackWalking.fbx');
+        this.loadAnimationFBX('DrunkWalk', './assets/victimDrunkWalk.fbx');
+        this.loadAnimationFBX('DrunkIdle', './assets/victimDrunkIdle.fbx');
+        this.loadAnimationFBX('Fall', './assets/victimFall.fbx');
+        this.loadAnimationFBX('Fallen', './assets/victimFallen.fbx');
+        this.loadAnimationFBX('Sleeping', './assets/victimSleeping.fbx');
         this.setInitState('Idle');
         this.walkingSpeed = 3;
         this.runningSpeed = 9;
