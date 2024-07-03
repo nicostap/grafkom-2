@@ -8,6 +8,7 @@ import { Maze } from "./components/Maze";
 import { SpectatorControls } from "./components/SpectatorControls";
 import { City } from "./components/City";
 import { Victim } from "./components/Victim";
+import { Clown } from "./components/Clown";
 import * as THREE from 'three';
 
 function CameraMovement() {
@@ -53,7 +54,6 @@ function CameraMovement() {
     }
 
 function App() {
-
     return (
         <KeyboardControls
             map={[
@@ -77,7 +77,7 @@ function App() {
                 <CameraMovement />
                 <SpectatorControls />
 
-                <ambientLight intensity={Math.PI / 2} />
+                <ambientLight intensity={Math.PI / 8} />
                 <Maze receiveShadow position={[0, 0, 0]} />
                 {/* Scene 1 - Minum-minum */}
                 <Bar2
@@ -92,7 +92,18 @@ function App() {
                     scale={[600, 600, 600]}
                     rotation={[0, Math.PI / 2, 0]}
                 />
-                <Victim position={[0, 10, -1000]} scale={[100, 100, 100]} />
+                <Victim
+                    position={[0, 10, -1000]}
+                    scale={[100, 100, 100]}
+                    receiveShadow
+                />
+                <directionalLight
+                    position={[0, 10, -1000]}
+                    intensity={Math.PI}
+                    castShadow
+                    receiveShadow
+                    color="#fff"
+                />
             </Canvas>
         </KeyboardControls>
     );

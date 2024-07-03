@@ -21,7 +21,7 @@ export const Clown: React.FC<CharacterProps> = (props) => {
         left: false,
         right: false,
         forward: true,
-    }
+    };
     let v = 0;
 
     useEffect(() => {
@@ -40,7 +40,7 @@ export const Clown: React.FC<CharacterProps> = (props) => {
     };
 
     useFrame((state, dt) => {
-        if(!group.current) return;
+        if (!group.current) return;
         raycaster.set(
             group.current.position,
             new THREE.Vector3(
@@ -73,8 +73,14 @@ export const Clown: React.FC<CharacterProps> = (props) => {
             .distance;
 
         // Decision Heuristics
-        if(middleSight < 40) decision.forward = false;
-        if(distanceTo(...props.targetPosition, ...group.current.position.toArray()) < 50) decision.forward = false;
+        if (middleSight < 40) decision.forward = false;
+        if (
+            distanceTo(
+                ...props.targetPosition,
+                ...group.current.position.toArray()
+            ) < 50
+        )
+            decision.forward = false;
         if (leftSight <= 240 && leftSight < rightSight) {
             decision.right = true;
         } else if (rightSight <= 240 && leftSight > rightSight) {
@@ -105,15 +111,22 @@ export const Clown: React.FC<CharacterProps> = (props) => {
             v = 4;
         }
         if (decision.left) {
-            group.current.rotation.y += (dt / 0.016) * 2 * Math.PI / 180;
+            group.current.rotation.y += ((dt / 0.016) * 2 * Math.PI) / 180;
         }
         if (decision.right) {
-            group.current.rotation.y  -= (dt / 0.016) * 2 * Math.PI / 180;
+            group.current.rotation.y -= ((dt / 0.016) * 2 * Math.PI) / 180;
         }
 
         const prev_position = group.current.position.clone();
-        group.current.position.add(new THREE.Vector3((dt / 0.016) * v * Math.sin(group.current.rotation.y ), 0, (dt / 0.016) * v * Math.cos(group.current.rotation.y )));
-        if(middleSight < 40) group.current.position.set(...prev_position.toArray());
+        group.current.position.add(
+            new THREE.Vector3(
+                (dt / 0.016) * v * Math.sin(group.current.rotation.y),
+                0,
+                (dt / 0.016) * v * Math.cos(group.current.rotation.y)
+            )
+        );
+        if (middleSight < 40)
+            group.current.position.set(...prev_position.toArray());
     });
 
     return <group {...props}></group>;
@@ -133,12 +146,19 @@ function vectorAngle(x: number, y: number) {
     return ret;
 }
 
-function distanceTo(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): number {
+function distanceTo(
+    x1: number,
+    y1: number,
+    z1: number,
+    x2: number,
+    y2: number,
+    z2: number
+): number {
     const dx = x2 - x1;
     const dy = y2 - y1;
     const dz = z2 - z1;
-    
+
     const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    
+
     return distance;
 }
