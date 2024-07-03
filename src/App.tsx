@@ -8,6 +8,7 @@ import { SpectatorControls } from "./components/SpectatorControls";
 import { City } from "./components/City";
 import { Victim } from "./components/Victim";
 import { Clown } from "./components/Clown";
+import { SimpleLight } from "./components/SimpleLight";
 
 function App() {
     return (
@@ -31,7 +32,6 @@ function App() {
                     makeDefault
                 />
                 <SpectatorControls />
-
                 <ambientLight intensity={Math.PI / 8} />
                 <Maze receiveShadow position={[0, 0, 0]} />
                 {/* Scene 1 - Minum-minum */}
@@ -51,13 +51,7 @@ function App() {
                     position={[0, 10, -1000]}
                     scale={[100, 100, 100]}
                     receiveShadow
-                />
-                <directionalLight
-                    position={[0, 10, -1000]}
-                    intensity={Math.PI}
                     castShadow
-                    receiveShadow
-                    color="#fff"
                 />
             </Canvas>
         </KeyboardControls>

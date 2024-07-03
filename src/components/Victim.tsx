@@ -78,6 +78,8 @@ export function Victim(props: JSX.IntrinsicElements["group"]) {
                     skeleton={nodes.Ch31_Body.skeleton}
                     rotation={[Math.PI / 2, 0, 0]}
                     scale={0.01}
+                    receiveShadow
+                    castShadow
                 />
                 <skinnedMesh
                     name="Ch31_Collar"
@@ -86,6 +88,8 @@ export function Victim(props: JSX.IntrinsicElements["group"]) {
                     skeleton={nodes.Ch31_Collar.skeleton}
                     rotation={[Math.PI / 2, 0, 0]}
                     scale={0.01}
+                    receiveShadow
+                    castShadow
                 />
                 <skinnedMesh
                     name="Ch31_Eyelashes"
@@ -94,6 +98,8 @@ export function Victim(props: JSX.IntrinsicElements["group"]) {
                     skeleton={nodes.Ch31_Eyelashes.skeleton}
                     rotation={[Math.PI / 2, 0, 0]}
                     scale={0.01}
+                    receiveShadow
+                    castShadow
                 />
                 <skinnedMesh
                     name="Ch31_Hair"
@@ -102,6 +108,8 @@ export function Victim(props: JSX.IntrinsicElements["group"]) {
                     skeleton={nodes.Ch31_Hair.skeleton}
                     rotation={[Math.PI / 2, 0, 0]}
                     scale={0.01}
+                    receiveShadow
+                    castShadow
                 />
                 <skinnedMesh
                     name="Ch31_Pants"
@@ -110,6 +118,8 @@ export function Victim(props: JSX.IntrinsicElements["group"]) {
                     skeleton={nodes.Ch31_Pants.skeleton}
                     rotation={[Math.PI / 2, 0, 0]}
                     scale={0.01}
+                    receiveShadow
+                    castShadow
                 />
                 <skinnedMesh
                     name="Ch31_Shoes"
@@ -118,6 +128,8 @@ export function Victim(props: JSX.IntrinsicElements["group"]) {
                     skeleton={nodes.Ch31_Shoes.skeleton}
                     rotation={[Math.PI / 2, 0, 0]}
                     scale={0.01}
+                    receiveShadow
+                    castShadow
                 />
                 <skinnedMesh
                     name="Ch31_Sweater"
@@ -126,6 +138,8 @@ export function Victim(props: JSX.IntrinsicElements["group"]) {
                     skeleton={nodes.Ch31_Sweater.skeleton}
                     rotation={[Math.PI / 2, 0, 0]}
                     scale={0.01}
+                    receiveShadow
+                    castShadow
                 />
             </group>
         </group>
