@@ -41,7 +41,6 @@ function App() {
                     position={[10000, 0, 0]}
                     scale={[60, 60, 60]}
                 />
-                <DrinkingVictim />
                 {/* Scene 2 - Mabok-mabok */}
                 <City
                     receiveShadow
