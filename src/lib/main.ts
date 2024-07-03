@@ -5,7 +5,7 @@ import { MeshBVH } from "three-mesh-bvh";
 import { acceleratedRaycast } from "three-mesh-bvh";
 import manager, { isFinished } from "./loading";
 import { GLTFObject } from "./model/gtlf";
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
@@ -51,15 +51,15 @@ export function renderMain() {
   GLTFObject.renderer = renderer;
   GLTFObject.camera = camera;
 
-  const controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = false; // an animation loop is required when either damping or auto-rotation is enabled
-  controls.dampingFactor = 0.05;
-  controls.screenSpacePanning = false;
-  controls.minDistance = 200;
-  controls.maxDistance = 400;
-  controls.maxPolarAngle = Math.PI / 2;
-  controls.enableZoom = true;
-  controls.autoRotate = false;
+  // const controls = new OrbitControls(camera, renderer.domElement);
+  // controls.enableDamping = false; // an animation loop is required when either damping or auto-rotation is enabled
+  // controls.dampingFactor = 0.05;
+  // controls.screenSpacePanning = false;
+  // controls.minDistance = 200;
+  // controls.maxDistance = 400;
+  // controls.maxPolarAngle = Math.PI / 2;
+  // controls.enableZoom = true;
+  // controls.autoRotate = false;
 
 
   // Map Generation
@@ -191,10 +191,18 @@ export function renderMain() {
     }
   }
 
-  // Map Scene 1
+  // Map Scene 2
   new GLTFObject(
     "./assets/maps/street.glb",
     new THREE.Vector3(10000, 0, 0),
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(60, 60, 60)
+  )
+
+  // Map Scene 1
+  new GLTFObject(
+    "./assets/maps/bar_indoor.glb",
+    new THREE.Vector3(0, 0, 10000),
     new THREE.Vector3(0, 0, 0),
     new THREE.Vector3(60, 60, 60)
   )
@@ -224,7 +232,7 @@ export function renderMain() {
   let cameraAngle = 0;
   let cameraDistance = 200;
   let defaultCameraDistance = 200;
-  let cameraModes = { FPS: 1, TPS: 2, OVER: 3};
+  let cameraModes = { FPS: 1, TPS: 2, OVER: 3, FREEROAM: 4};
   let cameraMode = cameraModes.TPS;
 
   window.addEventListener("keydown", (e) => {
@@ -246,6 +254,7 @@ export function renderMain() {
   {
     let renderLoop = 0;
     var time_prev = 0;
+    var statusGame = 1
     function animate(time: number) {
       // Time
       var dt = time - time_prev;
@@ -254,7 +263,8 @@ export function renderMain() {
       renderLoop++;
 
       if (renderLoop >= 15) {
-        // Clown
+        if (statusGame != 3){
+          // Clown
         if (clown.object) {
           // Pathfinding Logic
           let inputClown = { w: true, a: false, d: false, " ": true };
@@ -313,56 +323,56 @@ export function renderMain() {
             400,
             victim.object.position.z
           );
-          // if (cameraMode == cameraModes.TPS) {
-          //   if (input.keyPressed["q"]) cameraAngle += (3 * Math.PI) / 180;
-          //   if (input.keyPressed["e"]) cameraAngle -= (3 * Math.PI) / 180;
-          //   if (input.keyPressed["a"])
-          //     cameraAngle += ((dt / 0.016) * 2 * Math.PI) / 180;
-          //   if (input.keyPressed["d"])
-          //     cameraAngle -= ((dt / 0.016) * 2 * Math.PI) / 180;
-          //   // To Prevent Camera Clipping
-          //   cameraDistance = defaultCameraDistance;
-          //   let cameraClipped;
-          //   do {
-          //     cameraClipped = false;
-          //     camera.position.set(
-          //       victim.object.position.x -
-          //         cameraDistance * Math.sin(cameraAngle),
-          //       150 +
-          //         victim.object.position.y +
-          //         cameraDistance * Math.sin(Math.PI / 9),
-          //       victim.object.position.z -
-          //         cameraDistance * Math.cos(cameraAngle)
-          //     );
-          //     for (let collisionTarget of wallCollisionBoxes) {
-          //       if (collisionTarget.containsPoint(camera.position))
-          //         cameraClipped = true;
-          //     }
-          //     cameraDistance -= 2;
-          //   } while (cameraClipped);
-          //   camera.lookAt(
-          //     victim.object.position.x,
-          //     150,
-          //     victim.object.position.z
-          //   );
-          // } else if (cameraMode == cameraModes.FPS) {
-          //   camera.position.set(
-          //     victim.object.position.x,
-          //     185,
-          //     victim.object.position.z
-          //   );
-          //   camera.rotation.set(0, victim.angle + Math.PI, 0);
-          // }
           if (cameraMode == cameraModes.TPS) {
-            controls.enabled = true;
+            if (input.keyPressed["q"]) cameraAngle += (3 * Math.PI) / 180;
+            if (input.keyPressed["e"]) cameraAngle -= (3 * Math.PI) / 180;
+            if (input.keyPressed["a"])
+              cameraAngle += ((dt / 0.016) * 2 * Math.PI) / 180;
+            if (input.keyPressed["d"])
+              cameraAngle -= ((dt / 0.016) * 2 * Math.PI) / 180;
+            // To Prevent Camera Clipping
+            cameraDistance = defaultCameraDistance;
+            let cameraClipped;
+            do {
+              cameraClipped = false;
+              camera.position.set(
+                victim.object.position.x -
+                  cameraDistance * Math.sin(cameraAngle),
+                150 +
+                  victim.object.position.y +
+                  cameraDistance * Math.sin(Math.PI / 9),
+                victim.object.position.z -
+                  cameraDistance * Math.cos(cameraAngle)
+              );
+              for (let collisionTarget of wallCollisionBoxes) {
+                if (collisionTarget.containsPoint(camera.position))
+                  cameraClipped = true;
+              }
+              cameraDistance -= 2;
+            } while (cameraClipped);
+            camera.lookAt(
+              victim.object.position.x,
+              150,
+              victim.object.position.z
+            );
+          } else if (cameraMode == cameraModes.FPS) {
+            camera.position.set(
+              victim.object.position.x,
+              185,
+              victim.object.position.z
+            );
+            camera.rotation.set(0, victim.angle + Math.PI, 0);
+          }
+          if (cameraMode == cameraModes.TPS) {
+            // controls.enabled = true;
             // camera.position.set(
             //   victim.object.position.x - cameraDistance * Math.sin(cameraAngle),
             //   150 + victim.object.position.y + cameraDistance * Math.sin(Math.PI / 9),
             //   victim.object.position.z - cameraDistance * Math.cos(cameraAngle)
             // );
-            controls.target.set(victim.object.position.x, 150, victim.object.position.z);
+            // controls.target.set(victim.object.position.x, 150, victim.object.position.z);
           } else if (cameraMode == cameraModes.FPS) {
-            controls.enabled = false;
+            // controls.enabled = false;
             camera.position.set(
               victim.object.position.x,
               185,
@@ -375,8 +385,8 @@ export function renderMain() {
         // Gameover
         if (victim.object && clown.object) {
           if (clown.object.position.distanceTo(victim.object.position) < 200) {
-            controls.enabled = false;
-            controls.target.set(clown.object.position.x, 185, clown.object.position.z)
+            // controls.enabled = false;
+            // controls.target.set(clown.object.position.x, 185, clown.object.position.z)
             camera.position.set(
               clown.object.position.x + 40 * Math.sin(clown.angle),
               185,
@@ -392,11 +402,12 @@ export function renderMain() {
             cameraMode = cameraModes.OVER;
           }
         }
+        }
       }
-      
       // Teleportation Logic
     window.addEventListener("keydown", (e) => {
       if (e.key === "1") {
+        statusGame = 1
         // Define your teleportation destination here
         const teleportDestination = new THREE.Vector3(0, 0, 0);
         // Teleport the clown to the destination
@@ -405,6 +416,7 @@ export function renderMain() {
         }
       }
       else if (e.key === "2") {
+        statusGame = 2
         // Define your teleportation destination here
         const teleportDestination = new THREE.Vector3(10000, 0, 0);
         // Teleport the clown to the destination
@@ -412,12 +424,16 @@ export function renderMain() {
           victim.object.position.copy(teleportDestination);
         }
       }
+      else if (e.key == "3") {
+        statusGame = 3
+        camera.position.set(0, 0, 10000);
+      }
     });
 
       // Drawing scene
-      if (controls.enabled) {
-        controls.update(); // Update controls only if enabled
-      }
+      // if (controls.enabled) {
+      //   controls.update(); // Update controls only if enabled
+      // }
       renderer.render(scene, camera);
       requestAnimationFrame(animate);
     }
