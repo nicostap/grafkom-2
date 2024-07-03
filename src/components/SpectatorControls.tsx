@@ -12,7 +12,7 @@ const SPRINT = 1 << 6;
 
 const MOVESPEED = 400;
 const FRICTION = 0.9;
-const LOOKSPEED = 0.02;
+const LOOKSPEED = 0.00005;
 const SPRINTMULT = 5;
 const KEYMAPPING = {
     87: "FORWARD", // W
@@ -65,7 +65,8 @@ class SpectatorControlsClass {
         this._processMouseMove(event.movementX, event.movementY);
     }
     _processMouseMove(x = 0, y = 0) {
-        this._mouseState = { x, y };
+        this._mouseState.x += x;
+        this._mouseState.y += y;
     }
     _processKeyEvent(event: KeyboardEvent) {
         this._processKey(event.keyCode, event.type === "keydown");
@@ -176,7 +177,7 @@ class SpectatorControlsClass {
             return;
         }
         // view angles
-        const actualLookSpeed = delta * this.lookSpeed;
+        const actualLookSpeed = this.lookSpeed; /* * delta */
         const lon = 20 * this._mouseState.x * actualLookSpeed;
         const lat = 20 * this._mouseState.y * actualLookSpeed;
 
