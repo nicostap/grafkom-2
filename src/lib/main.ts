@@ -3,7 +3,7 @@ import { Clown, Victim } from "./model/character";
 import { Input } from "./input";
 import { MeshBVH } from "three-mesh-bvh";
 import { acceleratedRaycast } from "three-mesh-bvh";
-import manager, { isFinished } from "./loading";
+import { isFinished } from "./loading";
 import { GLTFObject } from "./model/gtlf";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
@@ -74,7 +74,9 @@ export function renderMain() {
           new THREE.Vector3(0, 0, 0),
           new THREE.Vector3(1, 1, 1),
           () => {
-            wallCollisionBoxes.push(new THREE.Box3().setFromObject(wall.object!));
+            wallCollisionBoxes.push(
+              new THREE.Box3().setFromObject(wall.object!)
+            );
             walls.push(wall.object!);
           }
         );
@@ -213,9 +215,9 @@ export function renderMain() {
               cameraAngle -= ((dt / 0.016) * 2 * Math.PI) / 180;
             // To Prevent Camera Clipping
             cameraDistance = defaultCameraDistance;
-            let cameraClipped;
+            const cameraRay = new THREE.Raycaster();
+            let intersects = [];
             do {
-              cameraClipped = false;
               camera.position.set(
                 victim.object.position.x -
                   cameraDistance * Math.sin(cameraAngle),
@@ -225,17 +227,18 @@ export function renderMain() {
                 victim.object.position.z -
                   cameraDistance * Math.cos(cameraAngle)
               );
-              for (let collisionTarget of wallCollisionBoxes) {
-                if (collisionTarget.containsPoint(camera.position))
-                  cameraClipped = true;
-              }
-              cameraDistance -= 2;
-            } while (cameraClipped);
-            camera.lookAt(
-              victim.object.position.x,
-              150,
-              victim.object.position.z
-            );
+              camera.lookAt(
+                victim.object.position.x,
+                150,
+                victim.object.position.z
+              );
+
+              const direction = new THREE.Vector3();
+              camera.getWorldDirection(direction);
+              cameraRay.set(camera.position, direction);
+
+              intersects = cameraRay.intersectObjects(scene.children, true);
+            } while (intersects.length > 0 && intersects[0].distance < 1);
           } else if (cameraMode == cameraModes.FPS) {
             camera.position.set(
               victim.object.position.x,
