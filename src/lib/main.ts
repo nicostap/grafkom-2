@@ -406,44 +406,75 @@ export function renderMain() {
       } else {
 
         // camera logic
-        var movementSpeed = 5;
-        var rotationSpeed = 5;
-        
-        function getCameraForwardVector() {
-          const direction = new THREE.Vector3();
-          camera.getWorldDirection(direction);
-          return direction;
-      }
         window.addEventListener("keydown", (e) => {
+          const movementSpeed = 0.1;
+          const rotationSpeed = 0.02;
+          
           switch (e.key) {
-            case 'w':
-                const forward = getCameraForwardVector();
-                camera.position.add(forward.multiplyScalar(movementSpeed));
-                break;
-            case 's':
-                const backward = getCameraForwardVector();
-                camera.position.add(backward.multiplyScalar(-movementSpeed));
-                break;
-            case 'a':
-                camera.position.x -= movementSpeed;
-                break;
-            case 'd':
-                camera.position.x += movementSpeed;
-                break;
-            case 'ArrowUp':
-                camera.rotation.x -= rotationSpeed;
-                break;
-            case 'ArrowDown':
-                camera.rotation.x += rotationSpeed;
-                break;
-            case 'ArrowLeft':
-                camera.rotation.y -= rotationSpeed;
-                break;
-            case 'ArrowRight':
-                camera.rotation.y += rotationSpeed;
-                break;
-        }
-        })
+              case 'w':
+                  // Move forward
+                  const forward = getCameraForwardVector();
+                  camera.position.add(forward.multiplyScalar(movementSpeed));
+                  break;
+              case 's':
+                  // Move backward
+                  const backward = getCameraForwardVector();
+                  camera.position.add(backward.multiplyScalar(-movementSpeed));
+                  break;
+              case 'a':
+                  // Move left
+                  const left = getCameraLeftVector();
+                  camera.position.add(left.multiplyScalar(movementSpeed));
+                  break;
+              case 'd':
+                  // Move right
+                  const right = getCameraRightVector();
+                  camera.position.add(right.multiplyScalar(movementSpeed));
+                  break;
+              case 'q':
+                  // Move up
+                  camera.position.y += movementSpeed;
+                  break;
+              case 'e':
+                  // Move down
+                  camera.position.y -= movementSpeed;
+                  break;
+              case 'ArrowUp':
+                  // Rotate up (pitch up)
+                  camera.rotateX(-rotationSpeed);
+                  break;
+              case 'ArrowDown':
+                  // Rotate down (pitch down)
+                  camera.rotateX(rotationSpeed);
+                  break;
+              case 'ArrowLeft':
+                  // Rotate left (yaw left)
+                  camera.rotateY(-rotationSpeed);
+                  break;
+              case 'ArrowRight':
+                  // Rotate right (yaw right)
+                  camera.rotateY(rotationSpeed);
+                  break;
+          }
+      });
+      
+      function getCameraForwardVector() {
+          const vector = new THREE.Vector3(0, 0, -1);
+          vector.applyQuaternion(camera.quaternion);
+          return vector;
+      }
+      
+      function getCameraLeftVector() {
+          const vector = new THREE.Vector3(-1, 0, 0);
+          vector.applyQuaternion(camera.quaternion);
+          return vector;
+      }
+      
+      function getCameraRightVector() {
+          const vector = new THREE.Vector3(1, 0, 0);
+          vector.applyQuaternion(camera.quaternion);
+          return vector;
+      }
       }
       // Teleportation Logic
     window.addEventListener("keydown", (e) => {
