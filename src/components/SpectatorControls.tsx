@@ -105,7 +105,6 @@ class SpectatorControlsClass {
     }
 
     _processClickEvent(event: MouseEvent) {
-        console.log(document.pointerLockElement);
         if (document.pointerLockElement !== this.gl.domElement) {
             // @ts-expect-error incomplete typings
             this.gl.domElement.requestPointerLock({
@@ -154,11 +153,14 @@ class SpectatorControlsClass {
         return this.enabled;
     }
     dispose() {
+        this.gl.domElement.removeEventListener(
+            "click",
+            this._processClickEvent
+        );
         document.removeEventListener(
             "pointerlockchange",
             this._processLockChangeEvent
         );
-        document.removeEventListener("click", this._processClickEvent);
         document.removeEventListener(
             "contextmenu",
             this._processContextMenuEvent
