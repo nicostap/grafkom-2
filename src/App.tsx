@@ -1,17 +1,9 @@
-import { Canvas, useFrame } from "@react-three/fiber";
-import {
-    FlyControls,
-    KeyboardControls,
-    OrbitControls,
-    PerspectiveCamera,
-    PointerLockControls,
-    useHelper,
-} from "@react-three/drei";
-import "./App.css";
+import { KeyboardControls, PerspectiveCamera } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
 import { Perf } from "r3f-perf";
-import { ModularWall } from "./components/ModularWall";
-import { Maze } from "./components/Maze";
+import "./App.css";
 import { Bar } from "./components/Bar";
+import { Maze } from "./components/Maze";
 import { SpectatorControls } from "./components/SpectatorControls";
 
 function App() {
@@ -28,14 +20,13 @@ function App() {
             <Canvas shadows>
                 <Perf />
                 <PerspectiveCamera
-                    position={[0, 0, 5]}
+                    position={[0, 0, 0]}
                     fov={75}
                     near={0.1}
                     far={100000}
                     makeDefault
                 />
                 <SpectatorControls />
-                <PointerLockControls />
                 <ambientLight intensity={Math.PI} />
                 <Maze receiveShadow position={[0, 0, 0]} />
                 <Bar

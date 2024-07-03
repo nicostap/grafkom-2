@@ -1,5 +1,6 @@
+import { PointerLockControls } from "@react-three/drei";
 import { EventManager, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 
 // actions
@@ -14,7 +15,7 @@ const SPRINT = 1 << 6;
 // defaults
 const MOVESPEED = 400;
 const FRICTION = 0.9;
-const LOOKSPEED = 0.005;
+const LOOKSPEED = 0.02;
 const SPRINTMULT = 5;
 const KEYMAPPING = {
     87: "FORWARD" /* W */,
@@ -27,7 +28,6 @@ const KEYMAPPING = {
 };
 
 class SpectatorControlsClass {
-    camera: THREE.Camera;
     lookSpeed: number;
     moveSpeed: number;
     friction: number;
@@ -39,7 +39,8 @@ class SpectatorControlsClass {
     _moveState: { velocity: THREE.Vector3 };
 
     constructor(
-        camera: THREE.Camera,
+        public camera: THREE.Camera,
+        public gl: THREE.WebGLRenderer,
         {
             lookSpeed = LOOKSPEED,
             moveSpeed = MOVESPEED,
@@ -60,6 +61,8 @@ class SpectatorControlsClass {
         this._moveState = { velocity: new THREE.Vector3(0, 0, 0) };
         this._processMouseMoveEvent = this._processMouseMoveEvent.bind(this);
         this._processKeyEvent = this._processKeyEvent.bind(this);
+        this._processClickEvent = this._processClickEvent.bind(this);
+        this._processLockChangeEvent = this._processLockChangeEvent.bind(this);
     }
     _processMouseMoveEvent(event: MouseEvent) {
         this._processMouseMove(event.movementX, event.movementY);
@@ -104,11 +107,33 @@ class SpectatorControlsClass {
         event.preventDefault();
     }
 
+    _processClickEvent(event: MouseEvent) {
+        if (!document.pointerLockElement) {
+            // @ts-expect-error incomplete typings
+            this.gl.domElement.requestPointerLock({
+                unadjustedMovement: true,
+            });
+        }
+    }
+
+    _processLockChangeEvent(event: Event) {
+        if (document.pointerLockElement === this.gl.domElement) {
+            this.enable();
+        } else {
+            this.disable();
+        }
+    }
+
     enable() {
         document.addEventListener("mousemove", this._processMouseMoveEvent);
         document.addEventListener("keydown", this._processKeyEvent);
         document.addEventListener("keyup", this._processKeyEvent);
         document.addEventListener("contextmenu", this._processContextMenuEvent);
+        this.gl.domElement.addEventListener("click", this._processClickEvent);
+        document.addEventListener(
+            "pointerlockchange",
+            this._processLockChangeEvent
+        );
 
         this.enabled = true;
         this.camera.rotation.reorder("YXZ");
@@ -120,6 +145,14 @@ class SpectatorControlsClass {
         document.removeEventListener(
             "contextmenu",
             this._processContextMenuEvent
+        );
+        this.gl.domElement.removeEventListener(
+            "click",
+            this._processClickEvent
+        );
+        document.removeEventListener(
+            "pointerlockchange",
+            this._processLockChangeEvent
         );
 
         this.enabled = false;
@@ -146,6 +179,7 @@ class SpectatorControlsClass {
         const actualLookSpeed = delta * this.lookSpeed;
         const lon = 20 * this._mouseState.x * actualLookSpeed;
         const lat = 20 * this._mouseState.y * actualLookSpeed;
+
         this.camera.rotation.x = Math.max(
             Math.min(this.camera.rotation.x - lat, Math.PI / 2),
             -Math.PI / 2
@@ -154,7 +188,7 @@ class SpectatorControlsClass {
         this._mouseState = { x: 0, y: 0 };
 
         // movements
-        let actualMoveSpeed = delta * this.moveSpeed;
+        let actualMoveSpeed = this.moveSpeed;
         const velocity = this._moveState.velocity.clone();
         const { press } = this._keyState;
         if (press & SPRINT) actualMoveSpeed *= this.sprintMultiplier;
@@ -194,8 +228,8 @@ export function SpectatorControls() {
     const set = useThree((state) => state.set);
 
     const controls = useMemo(
-        () => new SpectatorControlsClass(camera),
-        [camera]
+        () => new SpectatorControlsClass(camera, gl),
+        [camera, gl]
     );
 
     useEffect(() => {
