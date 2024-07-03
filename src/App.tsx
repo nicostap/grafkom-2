@@ -7,9 +7,9 @@ import { Maze } from "./components/Maze";
 import { SpectatorControls } from "./components/SpectatorControls";
 import { City } from "./components/City";
 import { Victim } from "./components/Victim";
+import { Clown } from "./components/Clown";
 
 function App() {
-
     return (
         <KeyboardControls
             map={[
@@ -23,8 +23,8 @@ function App() {
             <Canvas shadows>
                 <Perf />
                 <PerspectiveCamera
-                    position={[10000-200, 200, 300]}
-                    rotation={[0, -Math.PI/4, 0]}
+                    position={[10000 - 200, 200, 300]}
+                    rotation={[0, -Math.PI / 4, 0]}
                     fov={75}
                     near={0.1}
                     far={100000}
@@ -32,7 +32,7 @@ function App() {
                 />
                 <SpectatorControls />
 
-                <ambientLight intensity={Math.PI / 2} />
+                <ambientLight intensity={Math.PI / 8} />
                 <Maze receiveShadow position={[0, 0, 0]} />
                 {/* Scene 1 - Minum-minum */}
                 <Bar2
@@ -47,7 +47,24 @@ function App() {
                     scale={[600, 600, 600]}
                     rotation={[0, Math.PI / 2, 0]}
                 />
-                <Victim position={[0, 10, -1000]} scale={[100, 100, 100]} />
+                <Victim
+                    position={[0, 10, -1000]}
+                    scale={[100, 100, 100]}
+                    receiveShadow
+                />
+                <directionalLight
+                    position={[0, 10, -1000]}
+                    intensity={Math.PI}
+                    castShadow
+                    receiveShadow
+                    color="#fff"
+                />
+                <Clown
+                    position={[0, 10, -1200]}
+                    scale={[100, 100, 100]}
+                    rotation={[0, Math.PI, 0]}
+                    receiveShadow
+                />
             </Canvas>
         </KeyboardControls>
     );
