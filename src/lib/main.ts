@@ -403,6 +403,47 @@ export function renderMain() {
           }
         }
         }
+      } else {
+
+        // camera logic
+        var movementSpeed = 5;
+        var rotationSpeed = 5;
+        
+        function getCameraForwardVector() {
+          const direction = new THREE.Vector3();
+          camera.getWorldDirection(direction);
+          return direction;
+      }
+        window.addEventListener("keydown", (e) => {
+          switch (e.key) {
+            case 'w':
+                const forward = getCameraForwardVector();
+                camera.position.add(forward.multiplyScalar(movementSpeed));
+                break;
+            case 's':
+                const backward = getCameraForwardVector();
+                camera.position.add(backward.multiplyScalar(-movementSpeed));
+                break;
+            case 'a':
+                camera.position.x -= movementSpeed;
+                break;
+            case 'd':
+                camera.position.x += movementSpeed;
+                break;
+            case 'ArrowUp':
+                camera.rotation.x -= rotationSpeed;
+                break;
+            case 'ArrowDown':
+                camera.rotation.x += rotationSpeed;
+                break;
+            case 'ArrowLeft':
+                camera.rotation.y -= rotationSpeed;
+                break;
+            case 'ArrowRight':
+                camera.rotation.y += rotationSpeed;
+                break;
+        }
+        })
       }
       // Teleportation Logic
     window.addEventListener("keydown", (e) => {
@@ -426,7 +467,7 @@ export function renderMain() {
       }
       else if (e.key == "3") {
         statusGame = 3
-        camera.position.set(0, 0, 10000);
+        camera.position.set(0, 0, 0);
       }
     });
 
