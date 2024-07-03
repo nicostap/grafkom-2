@@ -4,14 +4,19 @@ import { Perf } from "r3f-perf";
 import "./App.css";
 import { Bar2 } from "./components/Bar2";
 import { Maze } from "./components/Maze";
-import { LB1 } from "./components/LB1";
-import { LB2 } from "./components/LB2";
-import { LB3 } from "./components/LB3";
-import { LB4 } from "./components/LB4";
 import { SpectatorControls } from "./components/SpectatorControls";
 import { City } from "./components/City";
+import { useRef } from 'react';
+import * as THREE from 'three';
 
 function App() {
+    const cameraRef = useRef<THREE.PerspectiveCamera>(null);
+
+    setTimeout(() => {
+        if (cameraRef.current) {
+          cameraRef.current.position.set(10000+200, 200, 500);
+        }
+      }, 3000); // Delay of 3 seconds
     return (
         <KeyboardControls
             map={[
@@ -25,7 +30,8 @@ function App() {
             <Canvas shadows>
                 <Perf />
                 <PerspectiveCamera
-                    position={[0, 0, 0]}
+                    position={[10000-200, 200, 300]}
+                    rotation={[0, -Math.PI/4, 0]}
                     fov={75}
                     near={0.1}
                     far={100000}
