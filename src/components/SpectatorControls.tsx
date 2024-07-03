@@ -1,9 +1,7 @@
-import { PointerLockControls } from "@react-three/drei";
 import { EventManager, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 
-// actions
 const FORWARD = 1 << 0;
 const LEFT = 1 << 1;
 const RIGHT = 1 << 2;
@@ -12,19 +10,18 @@ const UP = 1 << 4;
 const DOWN = 1 << 5;
 const SPRINT = 1 << 6;
 
-// defaults
 const MOVESPEED = 400;
 const FRICTION = 0.9;
 const LOOKSPEED = 0.02;
 const SPRINTMULT = 5;
 const KEYMAPPING = {
-    87: "FORWARD" /* W */,
-    83: "BACK" /* S */,
-    65: "LEFT" /* A */,
-    68: "RIGHT" /* D */,
-    32: "UP" /* Spacebar */,
-    67: "DOWN" /* C */,
-    16: "SPRINT" /* Shift */,
+    87: "FORWARD", // W
+    83: "BACK", // S
+    65: "LEFT", // A
+    68: "RIGHT", // D
+    32: "UP", // Spacebar
+    67: "DOWN", // C
+    16: "SPRINT", // Shift
 };
 
 class SpectatorControlsClass {
@@ -108,7 +105,7 @@ class SpectatorControlsClass {
     }
 
     _processClickEvent(event: MouseEvent) {
-        if (!document.pointerLockElement) {
+        if (document.pointerLockElement !== this.gl.domElement) {
             // @ts-expect-error incomplete typings
             this.gl.domElement.requestPointerLock({
                 unadjustedMovement: true,
@@ -124,16 +121,19 @@ class SpectatorControlsClass {
         }
     }
 
-    enable() {
-        document.addEventListener("mousemove", this._processMouseMoveEvent);
-        document.addEventListener("keydown", this._processKeyEvent);
-        document.addEventListener("keyup", this._processKeyEvent);
-        document.addEventListener("contextmenu", this._processContextMenuEvent);
+    setup() {
         this.gl.domElement.addEventListener("click", this._processClickEvent);
         document.addEventListener(
             "pointerlockchange",
             this._processLockChangeEvent
         );
+        document.addEventListener("contextmenu", this._processContextMenuEvent);
+    }
+
+    enable() {
+        document.addEventListener("mousemove", this._processMouseMoveEvent);
+        document.addEventListener("keydown", this._processKeyEvent);
+        document.addEventListener("keyup", this._processKeyEvent);
 
         this.enabled = true;
         this.camera.rotation.reorder("YXZ");
@@ -142,18 +142,6 @@ class SpectatorControlsClass {
         document.removeEventListener("mousemove", this._processMouseMoveEvent);
         document.removeEventListener("keydown", this._processKeyEvent);
         document.removeEventListener("keyup", this._processKeyEvent);
-        document.removeEventListener(
-            "contextmenu",
-            this._processContextMenuEvent
-        );
-        this.gl.domElement.removeEventListener(
-            "click",
-            this._processClickEvent
-        );
-        document.removeEventListener(
-            "pointerlockchange",
-            this._processLockChangeEvent
-        );
 
         this.enabled = false;
         this._keyState.press = 0;
@@ -165,6 +153,18 @@ class SpectatorControlsClass {
         return this.enabled;
     }
     dispose() {
+        this.gl.domElement.removeEventListener(
+            "click",
+            this._processClickEvent
+        );
+        document.removeEventListener(
+            "pointerlockchange",
+            this._processLockChangeEvent
+        );
+        document.removeEventListener(
+            "contextmenu",
+            this._processContextMenuEvent
+        );
         this.disable();
     }
     update(delta = 1) {
@@ -233,6 +233,7 @@ export function SpectatorControls() {
     );
 
     useEffect(() => {
+        controls.setup();
         controls.enable();
         return () => void controls.dispose();
     }, [controls, invalidate]);
