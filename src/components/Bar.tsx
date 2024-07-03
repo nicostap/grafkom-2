@@ -14,8 +14,6 @@ export function Bar(props: GroupProps) {
 
     materials["magnifying_glass_01_lense.001"].side = THREE.DoubleSide;
 
-    console.log(materials["magnifying_glass_01_lense.001"]);
-
     return (
         <group {...props} dispose={null}>
             <mesh
