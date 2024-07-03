@@ -59,12 +59,6 @@ function App() {
                     receiveShadow
                     color="#fff"
                 />
-                <Clown
-                    position={[0, 10, -1200]}
-                    scale={[100, 100, 100]}
-                    rotation={[0, Math.PI, 0]}
-                    receiveShadow
-                />
             </Canvas>
         </KeyboardControls>
     );
