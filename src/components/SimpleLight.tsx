@@ -20,7 +20,7 @@ export function SimpleLight(props: SimpleLightProps) {
                 position={props.targetPosition}
             />
 
-            <spotLightHelper args={[spotlight, "#FF0000"]} />
+            {/* <spotLightHelper args={[spotlight, "#FF0000"]} /> */}
         </>
     );
 }
