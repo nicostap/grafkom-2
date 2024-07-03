@@ -3,7 +3,7 @@ import { useGLTF } from "@react-three/drei";
 /**
  * @param {import("@react-three/fiber").GroupProps} props 
  */
-export function Model(props) {
+export function Street(props) {
     const { nodes, materials } = useGLTF("/jalan.glb");
     return (
         <group {...props} dispose={null}>

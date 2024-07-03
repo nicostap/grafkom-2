@@ -1,6 +1,6 @@
 import { useHelper } from "@react-three/drei";
 import { SpotLightProps } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { useRef, useState } from "react";
 import * as THREE from "three";
 
 export interface SimpleLightProps extends SpotLightProps {
@@ -9,18 +9,26 @@ export interface SimpleLightProps extends SpotLightProps {
 }
 
 export function SimpleLight(props: SimpleLightProps) {
-    const spotlight = useMemo(() => new THREE.SpotLight(), []);
+    const ref = useRef<THREE.SpotLight>(null!);
+    const [refAvailable, setRefAvailable] = useState(false);
+
+    useHelper(props.helper && ref, THREE.SpotLightHelper, "red");
 
     return (
         <>
-            <primitive object={spotlight} {...props} castShadow />
-
-            <primitive
-                object={spotlight.target}
-                position={props.targetPosition}
+            <spotLight
+                ref={(nref) => {
+                    ref.current = nref as THREE.SpotLight;
+                    setRefAvailable(true);
+                }}
+                {...props}
             />
-
-            <spotLightHelper args={[spotlight, "#FF0000"]} />
+            {refAvailable && (
+                <primitive
+                    object={ref.current.target}
+                    position={props.targetPosition}
+                />
+            )}
         </>
     );
 }

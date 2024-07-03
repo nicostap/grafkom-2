@@ -94,6 +94,7 @@ function App() {
                 {/* Scene 2 - Mabok-mabok */}
                 <City
                     receiveShadow
+                    castShadow
                     position={[-10000, 100, 1000]}
                     scale={[600, 600, 600]}
                     rotation={[0, Math.PI / 2, 0]}
