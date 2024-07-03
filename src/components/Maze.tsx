@@ -20,6 +20,7 @@ export function Maze(props: GroupProps) {
                             <ModularWall
                                 position={[i * 500 - 500, 250, j * 500 - 500]}
                                 scale={[250, 250, 250]}
+                                key={j}
                             />
                         ) : null
                     )}
