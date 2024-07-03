@@ -11,6 +11,7 @@ export function FloorTile(props: GroupProps) {
     const nodes = gltf.nodes as {
         [key: string]: THREE.Mesh;
     };
+
     return (
         <group {...props} dispose={null}>
             <mesh
