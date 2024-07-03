@@ -406,10 +406,11 @@ export function renderMain() {
       } else {
 
         // camera logic
-        window.addEventListener("keydown", (e) => {
+        window.addEventListener("keypress", (e) => {
           const movementSpeed = 0.1;
           const rotationSpeed = 0.02;
           
+          if (input.keyPressed["q"]) cameraAngle += (3 * Math.PI) / 180;
           switch (e.key) {
               case 'w':
                   // Move forward
