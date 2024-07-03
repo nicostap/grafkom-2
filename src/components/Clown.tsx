@@ -1,19 +1,44 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useGLTF, useAnimations } from "@react-three/drei";
 import * as THREE from "three";
+import { GLTF } from "three-stdlib";
 import { GroupProps, useFrame, useThree } from "@react-three/fiber";
 
-interface CharacterProps extends GroupProps {
-    url: string;
+type GLTFResult = GLTF & {
+    nodes: {
+        WhiteClown: THREE.SkinnedMesh;
+        mixamorigHips: THREE.Bone;
+    };
+    materials: {
+        WhiteClown_material: THREE.MeshStandardMaterial;
+    };
+    animations: GLTFAction[];
+};
+
+type ActionName = "Idle" | "Pulling" | "Running" | "Walking";
+interface GLTFAction extends THREE.AnimationClip {
+    name: ActionName;
+}
+
+type ContextType = Record<
+    string,
+    React.ForwardRefExoticComponent<
+        JSX.IntrinsicElements["skinnedMesh"] | JSX.IntrinsicElements["bone"]
+    >
+>;
+
+interface ClownProps extends GroupProps {
     targetPosition: [number, number, number];
 }
 
-export const Clown: React.FC<CharacterProps> = (props) => {
-    const group = useRef<THREE.Group>();
-    const { nodes, materials, animations } = useGLTF(props.url);
-    const { actions, mixer } = useAnimations(animations, group);
+export const Clown: React.FC<ClownProps> = (props) => {
+    const group = useRef<THREE.Group>(null);
+    const { nodes, materials, animations } = useGLTF(
+        "/clown-transformed.glb"
+    ) as GLTFResult;
+    const { actions } = useAnimations<GLTFAction>(animations, group);
 
-    const [currentState, setCurrentState] = useState<string>("");
+    const [currentState, setCurrentState] = useState<ActionName>("Idle");
 
     const { raycaster } = useThree();
 
@@ -25,13 +50,11 @@ export const Clown: React.FC<CharacterProps> = (props) => {
     let v = 0;
 
     useEffect(() => {
-        if (mixer && actions) {
-            actions["idle"]!.play();
-            setCurrentState("Idle");
-        }
-    }, [mixer, actions]);
+        actions.Idle?.play();
+    }, [actions]);
 
-    const setAnimation = (state: string) => {
+    const setAnimation = (state: ActionName) => {
+        if (currentState == state) return;
         if (actions && actions[state]) {
             actions[currentState]!.fadeOut(0.5);
             actions[state]!.reset().fadeIn(0.5).play();
@@ -127,9 +150,35 @@ export const Clown: React.FC<CharacterProps> = (props) => {
         );
         if (middleSight < 40)
             group.current.position.set(...prev_position.toArray());
+
+        if (v > 0) {
+            setAnimation('Running');
+        } else if (v == 0) {
+            setAnimation("Idle");
+        }
     });
 
-    return <group {...props}></group>;
+    return (
+        <group ref={group} {...props} dispose={null}>
+            <group name="Scene">
+                <group
+                    name="Armature"
+                    rotation={[Math.PI / 2, 0, 0]}
+                    scale={0.01}
+                >
+                    <primitive object={nodes.mixamorigHips} />
+                </group>
+                <skinnedMesh
+                    name="WhiteClown"
+                    geometry={nodes.WhiteClown.geometry}
+                    material={materials.WhiteClown_material}
+                    skeleton={nodes.WhiteClown.skeleton}
+                    rotation={[Math.PI / 2, 0, 0]}
+                    scale={0.01}
+                />
+            </group>
+        </group>
+    );
 };
 
 function radToDeg(rad: number) {

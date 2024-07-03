@@ -2,17 +2,53 @@ import { useGLTF, useAnimations } from "@react-three/drei";
 import { useThree, useFrame, GroupProps } from "@react-three/fiber";
 import { useRef, useState, useEffect } from "react";
 import * as THREE from "three";
+import { GLTF } from "three-stdlib";
 
-interface CharacterProps extends GroupProps {
-    url: string;
+type GLTFResult = GLTF & {
+    nodes: {
+        Ch31_Body: THREE.SkinnedMesh;
+        Ch31_Collar: THREE.SkinnedMesh;
+        Ch31_Eyelashes: THREE.SkinnedMesh;
+        Ch31_Hair: THREE.SkinnedMesh;
+        Ch31_Pants: THREE.SkinnedMesh;
+        Ch31_Shoes: THREE.SkinnedMesh;
+        Ch31_Sweater: THREE.SkinnedMesh;
+        mixamorig9Hips: THREE.Bone;
+    };
+    materials: {
+        Ch31_body: THREE.MeshStandardMaterial;
+        Ch31_hair: THREE.MeshStandardMaterial;
+    };
+    animations: GLTFAction[];
+};
+
+type ActionName =
+    | "Armature.004|mixamo.com|Layer0"
+    | "Idle"
+    | "Running"
+    | "Walking"
+    | "Walking.001"
+    | "WalkingBackwards";
+
+interface GLTFAction extends THREE.AnimationClip {
+    name: ActionName;
 }
 
-export const Player: React.FC<CharacterProps> = (props) => {
-    const group = useRef<THREE.Group>();
-    const { nodes, materials, animations } = useGLTF(props.url);
-    const { actions, mixer } = useAnimations(animations, group);
+type ContextType = Record<
+    string,
+    React.ForwardRefExoticComponent<
+        JSX.IntrinsicElements["skinnedMesh"] | JSX.IntrinsicElements["bone"]
+    >
+>;
 
-    const [currentState, setCurrentState] = useState<string>("");
+export function Player(props: GroupProps) {
+    const group = useRef<THREE.Group>(null);
+    const { nodes, materials, animations } = useGLTF(
+        "/victim2-transformed.glb"
+    ) as GLTFResult;
+    const { actions } = useAnimations<GLTFAction>(animations, group);
+
+    const [currentState, setCurrentState] = useState<ActionName>("Idle");
 
     const { raycaster } = useThree();
 
@@ -22,13 +58,11 @@ export const Player: React.FC<CharacterProps> = (props) => {
     const [cameraAngle, setCameraAngle] = useState<number>(0);
 
     useEffect(() => {
-        if (mixer && actions) {
-            actions["idle"]!.play();
-            setCurrentState("idle");
-        }
-    }, [mixer, actions]);
+        actions["Idle"]?.play();
+    }, [actions]);
 
-    const setAnimation = (state: string) => {
+    const setAnimation = (state: ActionName) => {
+        if (currentState == state) return;
         if (actions && actions[state]) {
             actions[currentState]!.fadeOut(0.5);
             actions[state]!.reset().fadeIn(0.5).play();
@@ -41,6 +75,10 @@ export const Player: React.FC<CharacterProps> = (props) => {
             case "W":
             case "w":
                 setV(1);
+                break;
+            case "S":
+            case "s":
+                setV(-1);
                 break;
             case "A":
             case "a":
@@ -70,6 +108,8 @@ export const Player: React.FC<CharacterProps> = (props) => {
         switch (event.key) {
             case "W":
             case "w":
+            case "S":
+            case "s":
                 setV(0);
                 break;
             case "Shift":
@@ -123,6 +163,18 @@ export const Player: React.FC<CharacterProps> = (props) => {
         if (middleSight < 40)
             group.current.position.set(...prev_position.toArray());
 
+        if (v == 1) {
+            if (walkingSpeed == 1) {
+                setAnimation("Walking");
+            } else {
+                setAnimation("Running");
+            }
+        } else if (v == -1) {
+            setAnimation("WalkingBackwards");
+        } else if (v == 0) {
+            setAnimation("Idle");
+        }
+
         if (cameraState == "TPS") {
             let cameraDistance = 300;
             let intersects = [];
@@ -162,5 +214,75 @@ export const Player: React.FC<CharacterProps> = (props) => {
         }
     });
 
-    return <group {...props}></group>;
-};
+    return (
+        <group ref={null} {...props} dispose={null}>
+            <group name="Scene">
+                <group
+                    name="Armature"
+                    rotation={[Math.PI / 2, 0, 0]}
+                    scale={0.01}
+                >
+                    <primitive object={nodes.mixamorig9Hips} />
+                </group>
+                <skinnedMesh
+                    name="Ch31_Body"
+                    geometry={nodes.Ch31_Body.geometry}
+                    material={materials.Ch31_body}
+                    skeleton={nodes.Ch31_Body.skeleton}
+                    rotation={[Math.PI / 2, 0, 0]}
+                    scale={0.01}
+                />
+                <skinnedMesh
+                    name="Ch31_Collar"
+                    geometry={nodes.Ch31_Collar.geometry}
+                    material={materials.Ch31_body}
+                    skeleton={nodes.Ch31_Collar.skeleton}
+                    rotation={[Math.PI / 2, 0, 0]}
+                    scale={0.01}
+                />
+                <skinnedMesh
+                    name="Ch31_Eyelashes"
+                    geometry={nodes.Ch31_Eyelashes.geometry}
+                    material={materials.Ch31_hair}
+                    skeleton={nodes.Ch31_Eyelashes.skeleton}
+                    rotation={[Math.PI / 2, 0, 0]}
+                    scale={0.01}
+                />
+                <skinnedMesh
+                    name="Ch31_Hair"
+                    geometry={nodes.Ch31_Hair.geometry}
+                    material={materials.Ch31_hair}
+                    skeleton={nodes.Ch31_Hair.skeleton}
+                    rotation={[Math.PI / 2, 0, 0]}
+                    scale={0.01}
+                />
+                <skinnedMesh
+                    name="Ch31_Pants"
+                    geometry={nodes.Ch31_Pants.geometry}
+                    material={materials.Ch31_body}
+                    skeleton={nodes.Ch31_Pants.skeleton}
+                    rotation={[Math.PI / 2, 0, 0]}
+                    scale={0.01}
+                />
+                <skinnedMesh
+                    name="Ch31_Shoes"
+                    geometry={nodes.Ch31_Shoes.geometry}
+                    material={materials.Ch31_body}
+                    skeleton={nodes.Ch31_Shoes.skeleton}
+                    rotation={[Math.PI / 2, 0, 0]}
+                    scale={0.01}
+                />
+                <skinnedMesh
+                    name="Ch31_Sweater"
+                    geometry={nodes.Ch31_Sweater.geometry}
+                    material={materials.Ch31_body}
+                    skeleton={nodes.Ch31_Sweater.skeleton}
+                    rotation={[Math.PI / 2, 0, 0]}
+                    scale={0.01}
+                />
+            </group>
+        </group>
+    );
+}
+
+useGLTF.preload("/victim2-transformed.glb");
