@@ -9,6 +9,7 @@ import { LB2 } from "./components/LB2";
 import { LB3 } from "./components/LB3";
 import { LB4 } from "./components/LB4";
 import { SpectatorControls } from "./components/SpectatorControls";
+import { City } from "./components/City";
 
 function App() {
     return (
@@ -31,6 +32,7 @@ function App() {
                     makeDefault
                 />
                 <SpectatorControls />
+
                 <ambientLight intensity={Math.PI / 2} />
                 <Maze receiveShadow position={[0, 0, 0]} />
                 {/* Scene 1 - Minum-minum */}
@@ -41,27 +43,9 @@ function App() {
                 />
                 <DrinkingVictim />
                 {/* Scene 2 - Mabok-mabok */}
-                <LB1
+                <City
                     receiveShadow
                     position={[-10000, 100, 1000]}
-                    scale={[600, 600, 600]}
-                    rotation={[0, Math.PI / 2, 0]}
-                />
-                <LB2
-                    receiveShadow
-                    position={[-10000, 100, 2000]}
-                    scale={[600, 600, 600]}
-                    rotation={[0, Math.PI / 2, 0]}
-                />
-                <LB3
-                    receiveShadow
-                    position={[-10000, 100, 3000]}
-                    scale={[600, 600, 600]}
-                    rotation={[0, Math.PI / 2, 0]}
-                />
-                <LB4
-                    receiveShadow
-                    position={[-10000, 100, 4500]}
                     scale={[600, 600, 600]}
                     rotation={[0, Math.PI / 2, 0]}
                 />
