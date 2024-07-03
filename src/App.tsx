@@ -1,5 +1,5 @@
 import { KeyboardControls, PerspectiveCamera } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import { Perf } from "r3f-perf";
 import "./App.css";
 import { Bar2 } from "./components/Bar2";
@@ -9,6 +9,7 @@ import { City } from "./components/City";
 import { Victim } from "./components/Victim";
 
 function App() {
+
     return (
         <KeyboardControls
             map={[
@@ -22,7 +23,8 @@ function App() {
             <Canvas shadows>
                 <Perf />
                 <PerspectiveCamera
-                    position={[0, 0, 0]}
+                    position={[10000-200, 200, 300]}
+                    rotation={[0, -Math.PI/4, 0]}
                     fov={75}
                     near={0.1}
                     far={100000}
