@@ -10,19 +10,21 @@ const UP = 1 << 4;
 const DOWN = 1 << 5;
 const SPRINT = 1 << 6;
 
-const MOVESPEED = 400;
+const MOVESPEED = 500;
 const FRICTION = 0.9;
-const LOOKSPEED = 0.02;
-const SPRINTMULT = 5;
+const LOOKSPEED = 0.00005;
+const SPRINTMULT = 7;
 const KEYMAPPING = {
     87: "FORWARD", // W
     83: "BACK", // S
     65: "LEFT", // A
     68: "RIGHT", // D
+    81: "CCW", // Q
+    69: "CW", // E
     32: "UP", // Spacebar
     67: "DOWN", // C
     16: "SPRINT", // Shift
-};
+} as const;
 
 class SpectatorControlsClass {
     lookSpeed: number;
@@ -65,7 +67,8 @@ class SpectatorControlsClass {
         this._processMouseMove(event.movementX, event.movementY);
     }
     _processMouseMove(x = 0, y = 0) {
-        this._mouseState = { x, y };
+        this._mouseState.x += x;
+        this._mouseState.y += y;
     }
     _processKeyEvent(event: KeyboardEvent) {
         this._processKey(event.keyCode, event.type === "keydown");
@@ -176,7 +179,7 @@ class SpectatorControlsClass {
             return;
         }
         // view angles
-        const actualLookSpeed = delta * this.lookSpeed;
+        const actualLookSpeed = this.lookSpeed; /* * delta */
         const lon = 20 * this._mouseState.x * actualLookSpeed;
         const lat = 20 * this._mouseState.y * actualLookSpeed;
 
