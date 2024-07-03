@@ -4,11 +4,15 @@ import {
     KeyboardControls,
     OrbitControls,
     PerspectiveCamera,
+    PointerLockControls,
+    useHelper,
 } from "@react-three/drei";
 import "./App.css";
 import { Perf } from "r3f-perf";
 import { ModularWall } from "./components/ModularWall";
 import { Maze } from "./components/Maze";
+import { Bar } from "./components/Bar";
+import { SpectatorControls } from "./components/SpectatorControls";
 
 function App() {
     return (
@@ -26,13 +30,19 @@ function App() {
                 <PerspectiveCamera
                     position={[0, 0, 5]}
                     fov={75}
+                    near={0.1}
                     far={100000}
                     makeDefault
                 />
-                <FlyControls makeDefault movementSpeed={100} />
+                <SpectatorControls />
+                <PointerLockControls />
                 <ambientLight intensity={Math.PI} />
                 <Maze receiveShadow position={[0, 0, 0]} />
-                <OrbitControls />
+                <Bar
+                    receiveShadow
+                    position={[10000, 0, 0]}
+                    scale={[60, 60, 60]}
+                />
             </Canvas>
         </KeyboardControls>
     );
