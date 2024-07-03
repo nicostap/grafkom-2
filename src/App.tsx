@@ -40,6 +40,7 @@ function App() {
                     position={[10000, 0, 0]}
                     scale={[60, 60, 60]}
                 />
+                <pointLight position={[10000, 0, 0]} intensity={1} color="white" />
 
                 // Scene 2 - Mabok-mabok
                 <LB1 
