@@ -188,7 +188,7 @@ class SpectatorControlsClass {
         this._mouseState = { x: 0, y: 0 };
 
         // movements
-        let actualMoveSpeed = this.moveSpeed;
+        let actualMoveSpeed = delta * this.moveSpeed;
         const velocity = this._moveState.velocity.clone();
         const { press } = this._keyState;
         if (press & SPRINT) actualMoveSpeed *= this.sprintMultiplier;
