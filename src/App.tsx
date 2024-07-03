@@ -1,5 +1,5 @@
 import { KeyboardControls, PerspectiveCamera } from "@react-three/drei";
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { Perf } from "r3f-perf";
 import "./App.css";
@@ -18,6 +18,8 @@ function CameraMovement() {
     const endPosition = new THREE.Vector3(10000 + 100, 250, 300); 
     const startRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, -Math.PI / 5, 0));
     const endRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI / 5, 0));
+    const [cutscene, finishedCutscene] = useState(false);
+
 
     useEffect(() => {
         camera.position.copy(startPosition);
@@ -35,20 +37,20 @@ function CameraMovement() {
     
           if (progress === 1) {
             startTime = 0; // Stop the animation once the duration is complete
+            finishedCutscene(true);
           }
         }
-        if (startTime == 0){
-            {/* Enable Scene 2 here */}
-            camera.position.set(-10000, 100, 0)
-            camera.rotation.set(0, 0, 0)
-            startTime--;
+    
+        if (cutscene) {
+          // Enable Scene 2 here
+          camera.position.set(-10000, 100, 0);
+          camera.rotation.set(0, 0, 0);
+          finishedCutscene(false); // Reset the state to avoid repeated teleportation
         }
       });
     
       return null;
-    
-      return null;
-}
+    }
 
 function App() {
 
@@ -72,8 +74,8 @@ function App() {
                     far={100000}
                     makeDefault
                 />
-                <SpectatorControls />
                 <CameraMovement />
+                <SpectatorControls />
 
                 <ambientLight intensity={Math.PI / 2} />
                 <Maze receiveShadow position={[0, 0, 0]} />
