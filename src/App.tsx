@@ -1,5 +1,6 @@
 import { KeyboardControls, PerspectiveCamera } from "@react-three/drei";
-import { Canvas, useThree } from "@react-three/fiber";
+import React, { useEffect, useRef } from 'react';
+import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { Perf } from "r3f-perf";
 import "./App.css";
 import { Bar2 } from "./components/Bar2";
@@ -7,6 +8,47 @@ import { Maze } from "./components/Maze";
 import { SpectatorControls } from "./components/SpectatorControls";
 import { City } from "./components/City";
 import { Victim } from "./components/Victim";
+import * as THREE from 'three';
+
+function CameraMovement() {
+    const { camera } = useThree();
+    var startTime = 0;
+    const duration = 10000; // Duration in milliseconds
+    const startPosition = new THREE.Vector3(10000 - 200, 250, 300);
+    const endPosition = new THREE.Vector3(10000 + 100, 250, 300); 
+    const startRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, -Math.PI / 5, 0));
+    const endRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI / 5, 0));
+
+    useEffect(() => {
+        camera.position.copy(startPosition);
+        camera.quaternion.copy(startRotation);
+        startTime = performance.now();
+      }, [camera]);
+    
+      useFrame(() => {
+        if (startTime) {
+          const elapsed = performance.now() - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+    
+          camera.position.lerpVectors(startPosition, endPosition, progress);
+          camera.quaternion.slerpQuaternions(startRotation, endRotation, progress);
+    
+          if (progress === 1) {
+            startTime = 0; // Stop the animation once the duration is complete
+          }
+        }
+        if (startTime == 0){
+            {/* Enable Scene 2 here */}
+            camera.position.set(-10000, 100, 0)
+            camera.rotation.set(0, 0, 0)
+            startTime--;
+        }
+      });
+    
+      return null;
+    
+      return null;
+}
 
 function App() {
 
@@ -23,7 +65,7 @@ function App() {
             <Canvas shadows>
                 <Perf />
                 <PerspectiveCamera
-                    position={[10000-200, 200, 300]}
+                    position={[10000-200, 250, 300]}
                     rotation={[0, -Math.PI/4, 0]}
                     fov={75}
                     near={0.1}
@@ -31,6 +73,7 @@ function App() {
                     makeDefault
                 />
                 <SpectatorControls />
+                <CameraMovement />
 
                 <ambientLight intensity={Math.PI / 2} />
                 <Maze receiveShadow position={[0, 0, 0]} />
