@@ -10,6 +10,27 @@ import { City } from "./components/City";
 import { Victim } from "./components/Victim";
 import { Clown } from "./components/Clown";
 import * as THREE from 'three';
+import {
+    CubeTextureLoader
+  } from "three";
+
+function SkyBox() {
+    const { scene } = useThree();
+    const loader = new CubeTextureLoader();
+    // The CubeTextureLoader load method takes an array of urls representing all 6 sides of the cube.
+    const texture = loader.load([
+      "/sky/1.jpg",
+      "/sky/2.jpg",
+      "/sky/3.jpg",
+      "/sky/4.jpg",
+      "/sky/5.jpg",
+      "/sky/6.jpg"
+    ]);
+  
+    // Set the scene background property to the resulting texture.
+    scene.background = texture;
+    return null;
+  }
 
 function CameraMovement() {
     const { camera } = useThree();
@@ -79,6 +100,7 @@ function App() {
 
                 <ambientLight intensity={Math.PI / 8} />
                 <Maze receiveShadow position={[0, 0, 0]} />
+                <SkyBox />
                 {/* Scene 1 - Minum-minum */}
                 <Bar2
                     receiveShadow
