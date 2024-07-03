@@ -29,7 +29,9 @@ type ContextType = Record<
 export function LampuJalan(props: JSX.IntrinsicElements["group"]) {
     const { nodes, materials } = useGLTF("/lampu_jalan.glb") as GLTFResult;
 
-    materials["Light.001"].emissiveIntensity = 0.5;
+    materials["Light.001"].emissiveIntensity = 1;
+    materials["Light.001"].color = new THREE.Color(0xffb84c);
+    materials["Light.001"].emissive = new THREE.Color(0xffb84c);
 
     return (
         <group {...props} dispose={null}>

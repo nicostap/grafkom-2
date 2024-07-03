@@ -173,6 +173,10 @@ export function Bar2(props: JSX.IntrinsicElements["group"]) {
     const { nodes, materials } = useGLTF(
         "/maps/bar_indoor_try.glb"
     ) as GLTFResult;
+
+    materials.LightCeilingLamp4.emissiveIntensity = 1;
+    materials.LightCeilingLamp4.emissive = new THREE.Color(0xffffff);
+
     return (
         <group {...props} dispose={null}>
             <mesh
@@ -1034,13 +1038,13 @@ export function Bar2(props: JSX.IntrinsicElements["group"]) {
                         material={materials.LightCeilingLamp4}
                     />
                     <SimpleLight
-                        helper
                         position={[0, 0, -0.001]}
-                        intensity={Math.PI}
+                        intensity={Math.PI * 2}
                         castShadow
-                        decay={0.1}
+                        decay={0.01}
                         targetPosition={[0, 0, -10]}
                         angle={Math.PI / 3}
+                        penumbra={0.75}
                         color="EDFF96"
                     />
                 </group>
@@ -1062,14 +1066,14 @@ export function Bar2(props: JSX.IntrinsicElements["group"]) {
                         material={materials.LightCeilingLamp4}
                     />
                     <SimpleLight
-                        helper
                         position={[0, 0, -0.001]}
-                        intensity={Math.PI}
+                        intensity={Math.PI * 2}
                         castShadow
-                        decay={0.1}
+                        decay={0.01}
                         targetPosition={[0, 0, -10]}
                         angle={Math.PI / 3}
                         color="EDFF96"
+                        penumbra={0.75}
                     />
                 </group>
                 <group
@@ -1090,14 +1094,14 @@ export function Bar2(props: JSX.IntrinsicElements["group"]) {
                         material={materials.LightCeilingLamp4}
                     />
                     <SimpleLight
-                        helper
                         position={[0, 0, -0.001]}
-                        intensity={Math.PI}
+                        intensity={Math.PI * 2}
                         castShadow
-                        decay={0.1}
+                        decay={0.01}
                         targetPosition={[0, 0, -10]}
                         angle={Math.PI / 3}
                         color="EDFF96"
+                        penumbra={0.75}
                     />
                 </group>
                 <group
@@ -1118,14 +1122,14 @@ export function Bar2(props: JSX.IntrinsicElements["group"]) {
                         material={materials.LightCeilingLamp4}
                     />
                     <SimpleLight
-                        helper
                         position={[0, 0, -0.001]}
-                        intensity={Math.PI}
+                        intensity={Math.PI * 2}
                         castShadow
-                        decay={0.1}
+                        decay={0.01}
                         targetPosition={[0, 0, -10]}
                         angle={Math.PI / 3}
                         color="EDFF96"
+                        penumbra={0.75}
                     />
                 </group>
                 <group
@@ -1146,13 +1150,13 @@ export function Bar2(props: JSX.IntrinsicElements["group"]) {
                         material={materials.LightCeilingLamp4}
                     />
                     <SimpleLight
-                        helper
                         position={[0, 0, -0.001]}
-                        intensity={Math.PI}
+                        intensity={Math.PI * 2}
                         castShadow
-                        decay={0.1}
+                        decay={0.01}
                         targetPosition={[0, 0, -10]}
                         angle={Math.PI / 3}
+                        penumbra={0.75}
                         color="EDFF96"
                     />
                 </group>
@@ -1174,11 +1178,11 @@ export function Bar2(props: JSX.IntrinsicElements["group"]) {
                         material={materials.LightCeilingLamp4}
                     />
                     <SimpleLight
-                        helper
+                        penumbra={0.75}
                         position={[0, 0, -0.001]}
-                        intensity={Math.PI}
+                        intensity={Math.PI * 2}
                         castShadow
-                        decay={0.1}
+                        decay={0.01}
                         targetPosition={[0, 0, -10]}
                         angle={Math.PI / 3}
                         color="EDFF96"
@@ -1202,11 +1206,11 @@ export function Bar2(props: JSX.IntrinsicElements["group"]) {
                         material={materials.LightCeilingLamp4}
                     />
                     <SimpleLight
-                        helper
+                        penumbra={0.75}
                         position={[0, 0, -0.001]}
-                        intensity={Math.PI}
+                        intensity={Math.PI * 2}
                         castShadow
-                        decay={0.1}
+                        decay={0.01}
                         targetPosition={[0, 0, -10]}
                         angle={Math.PI / 3}
                         color="EDFF96"

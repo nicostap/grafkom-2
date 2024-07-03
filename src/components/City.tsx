@@ -65,7 +65,7 @@ export function City(props: GroupProps) {
                                 angle={Math.PI / 3}
                                 penumbra={0.75}
                                 color={new THREE.Color(0xffb84c)}
-                                helper
+                                // helper
                             />
                         </group>
                         <group position={[0, 0, 1.1]}>
@@ -82,7 +82,7 @@ export function City(props: GroupProps) {
                                 angle={Math.PI / 3}
                                 penumbra={0.75}
                                 color={new THREE.Color(0xffb84c)}
-                                helper
+                                // helper
                             />
                         </group>
                     </group>

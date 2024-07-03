@@ -9,6 +9,8 @@ const BACK = 1 << 3;
 const UP = 1 << 4;
 const DOWN = 1 << 5;
 const SPRINT = 1 << 6;
+const ROLL_CW = 1 << 7;
+const ROLL_CCW = 1 << 8;
 
 const MOVESPEED = 500;
 const FRICTION = 0.9;
@@ -19,8 +21,8 @@ const KEYMAPPING = {
     83: "BACK", // S
     65: "LEFT", // A
     68: "RIGHT", // D
-    81: "CCW", // Q
-    69: "CW", // E
+    81: "ROLL_CW", // Q
+    69: "ROLL_CCW", // E
     32: "UP", // Spacebar
     67: "DOWN", // C
     16: "SPRINT", // Shift
@@ -97,6 +99,12 @@ class SpectatorControlsClass {
                 break;
             case "SPRINT":
                 isPressed ? (newPress |= SPRINT) : (newPress &= ~SPRINT);
+                break;
+            case "ROLL_CW":
+                isPressed ? (newPress |= ROLL_CW) : (newPress &= ~ROLL_CW);
+                break;
+            case "ROLL_CCW":
+                isPressed ? (newPress |= ROLL_CCW) : (newPress &= ~ROLL_CCW);
                 break;
             default:
                 break;
@@ -201,6 +209,12 @@ class SpectatorControlsClass {
         if (press & RIGHT) velocity.x = actualMoveSpeed;
         if (press & UP) velocity.y = actualMoveSpeed;
         if (press & DOWN) velocity.y = -actualMoveSpeed;
+
+        if (press & ROLL_CW)
+            this.camera.rotation.z += this.lookSpeed * delta * 3000;
+        if (press & ROLL_CCW)
+            this.camera.rotation.z -= this.lookSpeed * delta * 3000;
+
         this._moveCamera(velocity);
 
         this._moveState.velocity = velocity;
