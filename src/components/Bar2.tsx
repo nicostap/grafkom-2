@@ -174,8 +174,13 @@ export function Bar2(props: JSX.IntrinsicElements["group"]) {
         "/maps/bar_indoor_try.glb"
     ) as GLTFResult;
 
+    // Add bloom to the ceiling lamp fixtures
     materials.LightCeilingLamp4.emissiveIntensity = 1;
     materials.LightCeilingLamp4.emissive = new THREE.Color(0xffffff);
+
+    // Allow both sides of the texture to be rendered for glass
+    materials["magnifying_glass_01_lense.001"].side = THREE.DoubleSide;
+    materials["magnifying_glass_01_lense.001"].transparent = true;
 
     return (
         <group {...props} dispose={null}>
