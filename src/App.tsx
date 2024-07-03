@@ -1,22 +1,14 @@
 import { KeyboardControls, PerspectiveCamera } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import { Perf } from "r3f-perf";
 import "./App.css";
 import { Bar2 } from "./components/Bar2";
 import { Maze } from "./components/Maze";
 import { SpectatorControls } from "./components/SpectatorControls";
 import { City } from "./components/City";
-import { useRef } from 'react';
-import * as THREE from 'three';
 
 function App() {
-    const cameraRef = useRef<THREE.PerspectiveCamera>(null);
 
-    setTimeout(() => {
-        if (cameraRef.current) {
-          cameraRef.current.position.set(10000+200, 200, 500);
-        }
-      }, 3000); // Delay of 3 seconds
     return (
         <KeyboardControls
             map={[
