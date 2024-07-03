@@ -12,12 +12,15 @@ import { Victim } from "./components/Victim";
 import { SkyBox } from "./components/Skybox";
 import { CustsceneController } from "./components/CutsceneController";
 import { useAppContext } from "./components/AppContext";
+import { QuickStateToggle } from "./components/QuickStateToggle";
+import { BarScene } from "./components/BarScene";
 
 function App() {
     const { appState } = useAppContext();
 
     return (
         <Canvas shadows>
+            <QuickStateToggle />
             <SkyBox />
             <fog attach="fog" far={8000} near={3000} color="darkgray" />
             <Suspense fallback={null}>
@@ -34,15 +37,20 @@ function App() {
             />
             <CustsceneController />
 
-            {!appState.ongoingCutscene && <SpectatorControls />}
+            {!appState.ongoingCutscene && appState.freecamMode && (
+                <SpectatorControls />
+            )}
 
             <ambientLight intensity={Math.PI / 16} />
             <Maze receiveShadow position={[0, 0, 0]} />
             {/* Scene 1 - Minum-minum */}
+            <BarScene
+                receiveShadow
+                position={[10000, 0, 0]}
+                scale={[60, 60, 60]}
+            />
 
-            <Bar2 receiveShadow position={[10000, 0, 0]} scale={[60, 60, 60]} />
             {/* Scene 2 - Mabok-mabok */}
-
             <City
                 receiveShadow
                 castShadow

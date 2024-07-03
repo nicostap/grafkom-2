@@ -21,12 +21,14 @@ export function Maze(props: GroupProps) {
                                 position={[i * 500 - 500, 250, j * 500 - 500]}
                                 scale={[250, 250, 250]}
                                 key={j}
+                                frustumCulled
                             />
                         ) : (
                             <FloorTile
                                 position={[i * 500 - 500, 0, j * 500 - 500]}
                                 scale={[250, 250, 250]}
                                 key={j}
+                                frustumCulled
                             />
                         )
                     )}

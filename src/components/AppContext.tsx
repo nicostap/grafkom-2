@@ -2,6 +2,9 @@ import { useState, useContext, createContext } from "react";
 
 interface AppState {
     ongoingCutscene: boolean;
+    freecamMode: boolean;
+    currentScene: number;
+    ambientLightIntensity: number;
 }
 
 interface AppStateContext {
@@ -18,6 +21,9 @@ interface AppContextProps {
 export function AppProvider({ children }: AppContextProps) {
     const [appState, setAppState] = useState<AppState>({
         ongoingCutscene: false,
+        freecamMode: false,
+        currentScene: 1,
+        ambientLightIntensity: Math.PI / 16,
     });
 
     return (

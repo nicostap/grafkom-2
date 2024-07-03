@@ -8,6 +8,7 @@ import * as THREE from "three";
 import React, { useEffect, useRef } from "react";
 import { useGLTF, useAnimations } from "@react-three/drei";
 import { GLTF } from "three-stdlib";
+import { GroupProps } from "@react-three/fiber";
 
 type GLTFResult = GLTF & {
     nodes: {
@@ -50,16 +51,25 @@ type ContextType = Record<
     >
 >;
 
-export function Victim(props: JSX.IntrinsicElements["group"]) {
+interface VictimProps extends GroupProps {
+    activeAction?: ActionName;
+}
+
+export function Victim(props: VictimProps) {
     const group = useRef<THREE.Group>(null);
     const { nodes, materials, animations } = useGLTF(
         "/victim2-transformed.glb"
     ) as GLTFResult;
     const { actions } = useAnimations<GLTFAction>(animations, group);
+    const activeAction = props.activeAction ?? "Idle";
 
     useEffect(() => {
-        actions.DrunkWalking?.play();
-    }, [actions]);
+        actions[activeAction]?.reset().fadeIn(0.5).play();
+
+        return () => {
+            actions[activeAction]?.fadeOut(0.5);
+        };
+    }, [activeAction, actions]);
 
     return (
         <group ref={group} {...props} dispose={null}>
