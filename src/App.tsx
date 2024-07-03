@@ -13,7 +13,7 @@ import * as THREE from "three";
 
 function CameraMovement() {
     const { camera } = useThree();
-    var startTime = 0;
+    let startTime = 0;
     const duration = 10000; // Duration in milliseconds
     const startPosition = new THREE.Vector3(10000 - 200, 250, 300);
     const endPosition = new THREE.Vector3(10000 + 100, 250, 300);
