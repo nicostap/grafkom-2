@@ -1,6 +1,6 @@
 import { KeyboardControls, PerspectiveCamera } from "@react-three/drei";
-import React, { useEffect, useRef, useState } from 'react';
-import { Canvas, useThree, useFrame } from '@react-three/fiber';
+import React, { useEffect, useRef, useState } from "react";
+import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { Perf } from "r3f-perf";
 import "./App.css";
 import { Bar2 } from "./components/Bar2";
@@ -34,45 +34,52 @@ function SkyBox() {
 
 function CameraMovement() {
     const { camera } = useThree();
-    var startTime = 0;
+    let startTime = 0;
     const duration = 10000; // Duration in milliseconds
     const startPosition = new THREE.Vector3(10000 - 200, 250, 300);
-    const endPosition = new THREE.Vector3(10000 + 100, 250, 300); 
-    const startRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, -Math.PI / 5, 0));
-    const endRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI / 5, 0));
+    const endPosition = new THREE.Vector3(10000 + 100, 250, 300);
+    const startRotation = new THREE.Quaternion().setFromEuler(
+        new THREE.Euler(0, -Math.PI / 5, 0)
+    );
+    const endRotation = new THREE.Quaternion().setFromEuler(
+        new THREE.Euler(0, Math.PI / 5, 0)
+    );
     const [cutscene, finishedCutscene] = useState(false);
-
 
     useEffect(() => {
         camera.position.copy(startPosition);
         camera.quaternion.copy(startRotation);
         startTime = performance.now();
-      }, [camera]);
-    
-      useFrame(() => {
+    }, [camera]);
+
+    useFrame(() => {
         if (startTime) {
-          const elapsed = performance.now() - startTime;
-          const progress = Math.min(elapsed / duration, 1);
-    
-          camera.position.lerpVectors(startPosition, endPosition, progress);
-          camera.quaternion.slerpQuaternions(startRotation, endRotation, progress);
-    
-          if (progress === 1) {
-            startTime = 0; // Stop the animation once the duration is complete
-            finishedCutscene(true);
-          }
+            const elapsed = performance.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            camera.position.lerpVectors(startPosition, endPosition, progress);
+            camera.quaternion.slerpQuaternions(
+                startRotation,
+                endRotation,
+                progress
+            );
+
+            if (progress === 1) {
+                startTime = 0; // Stop the animation once the duration is complete
+                finishedCutscene(true);
+            }
         }
-    
+
         if (cutscene) {
-          // Enable Scene 2 here
-          camera.position.set(-10000, 100, 0);
-          camera.rotation.set(0, 0, 0);
-          finishedCutscene(false); // Reset the state to avoid repeated teleportation
+            // Enable Scene 2 here
+            camera.position.set(-10000, 100, 0);
+            camera.rotation.set(0, 0, 0);
+            finishedCutscene(false); // Reset the state to avoid repeated teleportation
         }
-      });
-    
-      return null;
-    }
+    });
+
+    return null;
+}
 
 function App() {
     return (
@@ -88,8 +95,8 @@ function App() {
             <Canvas shadows>
                 <Perf />
                 <PerspectiveCamera
-                    position={[10000-200, 250, 300]}
-                    rotation={[0, -Math.PI/4, 0]}
+                    position={[10000 - 200, 250, 300]}
+                    rotation={[0, -Math.PI / 4, 0]}
                     fov={75}
                     near={0.1}
                     far={100000}
@@ -97,7 +104,6 @@ function App() {
                 />
                 <CameraMovement />
                 <SpectatorControls />
-
                 <ambientLight intensity={Math.PI / 8} />
                 <Maze receiveShadow position={[0, 0, 0]} />
                 <SkyBox />
@@ -118,13 +124,7 @@ function App() {
                     position={[0, 10, -1000]}
                     scale={[100, 100, 100]}
                     receiveShadow
-                />
-                <directionalLight
-                    position={[0, 10, -1000]}
-                    intensity={Math.PI}
                     castShadow
-                    receiveShadow
-                    color="#fff"
                 />
             </Canvas>
         </KeyboardControls>
