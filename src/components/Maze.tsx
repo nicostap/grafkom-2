@@ -1,6 +1,5 @@
 import { GroupProps } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
-import * as THREE from "three";
 import { getRandomMap } from "../lib/maps";
 import { ModularWall } from "./ModularWall";
 import { FloorTile } from "./FloorTile";
@@ -23,11 +22,13 @@ export function Maze(props: GroupProps) {
                                 scale={[250, 250, 250]}
                                 key={j}
                             />
-                        ) : <FloorTile 
+                        ) : (
+                            <FloorTile
                                 position={[i * 500 - 500, 0, j * 500 - 500]}
                                 scale={[250, 250, 250]}
                                 key={j}
-                             />
+                            />
+                        )
                     )}
                 </group>
             ))}

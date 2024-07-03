@@ -10,19 +10,21 @@ const UP = 1 << 4;
 const DOWN = 1 << 5;
 const SPRINT = 1 << 6;
 
-const MOVESPEED = 400;
+const MOVESPEED = 500;
 const FRICTION = 0.9;
 const LOOKSPEED = 0.00005;
-const SPRINTMULT = 5;
+const SPRINTMULT = 7;
 const KEYMAPPING = {
     87: "FORWARD", // W
     83: "BACK", // S
     65: "LEFT", // A
     68: "RIGHT", // D
+    81: "CCW", // Q
+    69: "CW", // E
     32: "UP", // Spacebar
     67: "DOWN", // C
     16: "SPRINT", // Shift
-};
+} as const;
 
 class SpectatorControlsClass {
     lookSpeed: number;
