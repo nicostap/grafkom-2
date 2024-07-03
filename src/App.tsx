@@ -2,7 +2,7 @@ import { KeyboardControls, PerspectiveCamera } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Perf } from "r3f-perf";
 import "./App.css";
-import { Bar } from "./components/Bar";
+import { Bar2 } from "./components/Bar2";
 import { Maze } from "./components/Maze";
 import { LB1 } from "./components/LB1";
 import { LB2 } from "./components/LB2";
@@ -34,11 +34,12 @@ function App() {
                 <ambientLight intensity={Math.PI / 2} />
                 <Maze receiveShadow position={[0, 0, 0]} />
                 {/* Scene 1 - Minum-minum */}
-                <Bar
+                <Bar2
                     receiveShadow
                     position={[10000, 0, 0]}
                     scale={[60, 60, 60]}
                 />
+                <DrinkingVictim />
                 {/* Scene 2 - Mabok-mabok */}
                 <LB1
                     receiveShadow
