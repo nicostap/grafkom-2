@@ -14,9 +14,12 @@ import { CustsceneController } from "./components/CutsceneController";
 import { useAppContext } from "./components/AppContext";
 import { QuickStateToggle } from "./components/QuickStateToggle";
 import { BarScene } from "./components/BarScene";
+import { Player } from "./components/Player";
+import { Clown } from "./components/Clown";
 
 function App() {
     const [appState] = useAppContext();
+    const playerPosition= useRef<[number, number, number]>([0, 0, 0]);
 
     return (
         <Canvas shadows>
@@ -64,6 +67,20 @@ function App() {
                 scale={[100, 100, 100]}
                 rotation={[0, Math.PI, 0]}
                 activeAction="DrunkIdle"
+            />
+
+            {/* Scene 2 - Mabok-mabok */}
+            <Player 
+                position={[0, 0, 0]}
+                scale={[200, 200, 200]}
+                rotation={[0, Math.PI, 0]}
+                updatePosition={playerPosition}
+            />
+            <Clown
+                position={[1000, 0, 1000]}
+                scale={[200, 200, 200]}
+                rotation={[0, Math.PI, 0]}
+                targetPosition={playerPosition.current}
             />
         </Canvas>
     );

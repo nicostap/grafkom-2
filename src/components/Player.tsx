@@ -42,9 +42,7 @@ type ContextType = Record<
 >;
 
 interface PlayerProps extends GroupProps {
-    updatePosition: React.Dispatch<
-        React.SetStateAction<[number, number, number]>
-    >;
+    updatePosition: React.MutableRefObject<[number, number, number]>;
 }
 
 export const Player: React.FC<PlayerProps> = (props) => {
@@ -170,7 +168,7 @@ export const Player: React.FC<PlayerProps> = (props) => {
         if (middleSight < 40)
             group.current.position.set(...prev_position.toArray());
 
-        props.updatePosition(group.current.position.toArray());
+        props.updatePosition.current = group.current.position.toArray();
 
         if (v.current == 1) {
             if (walkingSpeed.current == 1) {
