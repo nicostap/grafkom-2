@@ -27,13 +27,13 @@ export function CustsceneController() {
         new THREE.Euler(0, Math.PI / 1.7, 0)
     );
     
-    const startPosition3 = new THREE.Vector3(-9200, 250, 1000);
-    const endPosition3 = new THREE.Vector3(-9200, 250, 1000 - 400);
+    const startPosition3 = new THREE.Vector3(-9200, 250, -1000);
+    const endPosition3 = new THREE.Vector3(-9200, 250, -1600);
     const startRotation3 = new THREE.Quaternion().setFromEuler(
-        new THREE.Euler(0, 0, 0)
+        new THREE.Euler(0, Math.PI, 0)
     );
     const endRotation3 = new THREE.Quaternion().setFromEuler(
-        new THREE.Euler(0, 0, 0)
+        new THREE.Euler(0, Math.PI, Math.PI)
     );
     const [cutscene, setCutscene] = useState(0);
 

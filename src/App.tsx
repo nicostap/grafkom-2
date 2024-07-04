@@ -62,10 +62,10 @@ function App() {
             />
 
             <Victim
-                position={[-9200, 100, 900]}
+                position={[-9200, 100, -900]}
                 scale={[100, 100, 100]}
                 rotation={[0, Math.PI, 0]}
-                activeAction="DrunkWalking"
+                activeAction="DrunkIdle"
             />
         </Canvas>
     );

@@ -55,7 +55,7 @@ interface VictimProps extends GroupProps {
     activeAction?: ActionName;
 }
 
-export function Victim(props: VictimProps) {
+export function Victim(props: VictimProps,) {
     const group = useRef<THREE.Group>(null);
     const { nodes, materials, animations } = useGLTF(
         "/victim2-transformed.glb"
