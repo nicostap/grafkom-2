@@ -2,12 +2,14 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { useEffect, useRef, useState } from "react";
 import { useAppContext } from "./AppContext";
+import { Victim } from "./Victim";
 
 export function CustsceneController() {
     const { camera } = useThree();
     const startTime = useRef(0);
     const duration1 = 10000; // Duration in milliseconds for first cutscene
     const duration2 = 10000; // Duration in milliseconds for second cutscene
+    const duration3 = 20000; // Duration in milliseconds for second cutscene
     const startPosition1 = new THREE.Vector3(10000 - 200, 250, 300);
     const endPosition1 = new THREE.Vector3(10000 + 100, 250, 300);
     const startRotation1 = new THREE.Quaternion().setFromEuler(
@@ -23,6 +25,15 @@ export function CustsceneController() {
     );
     const endRotation2 = new THREE.Quaternion().setFromEuler(
         new THREE.Euler(0, Math.PI / 1.7, 0)
+    );
+    
+    const startPosition3 = new THREE.Vector3(-9200, 250, 1000);
+    const endPosition3 = new THREE.Vector3(-9200, 250, 1000 - 400);
+    const startRotation3 = new THREE.Quaternion().setFromEuler(
+        new THREE.Euler(0, 0, 0)
+    );
+    const endRotation3 = new THREE.Quaternion().setFromEuler(
+        new THREE.Euler(0, 0, 0)
     );
     const [cutscene, setCutscene] = useState(0);
 
@@ -82,13 +93,25 @@ export function CustsceneController() {
             );
 
             if (progress === 1) {
-                setCutscene(2); // End of cutscenes
+                startTime.current = performance.now();
+                setCutscene(2); 
             }
         } else if (cutscene === 2) {
+            const elapsed = performance.now() - startTime.current;
+            const progress = Math.min(elapsed / duration3, 1);
+
+            camera.position.lerpVectors(startPosition3, endPosition3, progress);
+            camera.quaternion.slerpQuaternions(
+                startRotation3,
+                endRotation3,
+                progress
+            );
             // Teleport to the new position
-            camera.position.set(-10000, 100, 0);
-            camera.rotation.set(0, 0, 0);
-            setCutscene(3); // Prevent this block from running again
+            // camera.position.set(-9200, 200, 1000);
+            // camera.rotation.set(0, 0, 0);
+            if (progress === 1) {
+                setCutscene(3); // End of cutscenes
+            } // Prevent this block from running again
         }
         //     } else if (cutscene === 3) {
         //         // camera.position.set(0, 150, 0);
