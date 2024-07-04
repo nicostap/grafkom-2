@@ -19,7 +19,7 @@ import { Clown } from "./components/Clown";
 
 function App() {
     const [appState] = useAppContext();
-    const playerPosition= useRef<[number, number, number]>([0, 0, 0]);
+    const playerPosition = useRef<[number, number, number]>([0, 0, 0]);
 
     return (
         <Canvas shadows>
@@ -69,19 +69,24 @@ function App() {
                 activeAction="DrunkIdle"
             />
 
-            {/* Scene 2 - Mabok-mabok */}
-            <Player 
-                position={[0, 0, 0]}
-                scale={[200, 200, 200]}
-                rotation={[0, Math.PI, 0]}
-                updatePosition={playerPosition}
-            />
-            <Clown
-                position={[1000, 0, 1000]}
-                scale={[200, 200, 200]}
-                rotation={[0, Math.PI, 0]}
-                targetPosition={playerPosition.current}
-            />
+            {/* Scene 3 - Mabok-mabok */}
+            {!appState.ongoingCutscene && (
+                <>
+                    <Maze position={[0, -30, 0]}></Maze>
+                    <Player
+                        position={[0, 0, 0]}
+                        scale={[200, 200, 200]}
+                        rotation={[0, Math.PI, 0]}
+                        updatePosition={playerPosition}
+                    />
+                    <Clown
+                        position={[1000, 0, 1000]}
+                        scale={[200, 200, 200]}
+                        rotation={[0, Math.PI, 0]}
+                        targetPosition={playerPosition.current}
+                    />
+                </>
+            )}
         </Canvas>
     );
 }
