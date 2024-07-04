@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import * as THREE from "three";
 import { GLTF } from "three-stdlib";
 import { SimpleLight } from "./SimpleLight";
+import { Group } from "three";
 
 type GLTFResult = GLTF & {
     nodes: {

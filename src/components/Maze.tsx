@@ -45,7 +45,7 @@ export function Maze(props: GroupProps) {
                                         j * 500 - 500,
                                     ]}
                                     intensity={Math.PI * 2}
-                                    castShadow
+                                    // castShadow
                                     decay={0.01}
                                     targetPosition={[
                                         i * 500 - 500,

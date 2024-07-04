@@ -16,10 +16,12 @@ import { QuickStateToggle } from "./components/QuickStateToggle";
 import { BarScene } from "./components/BarScene";
 import { Player } from "./components/Player";
 import { Clown } from "./components/Clown";
+import { Group } from "three";
 
 function App() {
     const [appState] = useAppContext();
     const playerPosition = useRef<[number, number, number]>([0, 0, 0]);
+    const mazeRef = useRef<Group>(null!);
 
     return (
         <Canvas shadows>
@@ -80,7 +82,7 @@ function App() {
             {/* Scene 3 - Mabok-mabok */}
             {!appState.ongoingCutscene && !appState.freecamMode && (
                 <>
-                    <Maze position={[0, -50, 0]}></Maze>
+                    <Maze position={[0, -50, 0]} ref={mazeRef}></Maze>
                     <Player
                         position={[0, 0, 0]}
                         scale={[200, 200, 200]}
