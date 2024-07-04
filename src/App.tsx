@@ -25,17 +25,17 @@ function App() {
         <Canvas shadows>
             <QuickStateToggle />
             <SkyBox />
-            <fog attach="fog" far={8000} near={3000} color="darkgray" />
-            <Suspense fallback={null}>
+            {/* <fog attach="fog" far={8000} near={3000} color="darkgray" /> */}
+            {/* <Suspense fallback={null}>
                 <PostProcessing />
-            </Suspense>
-            {/* <Perf /> */}
+            </Suspense> */}
+            <Perf />
             <PerspectiveCamera
                 position={[10000 - 200, 250, 300]}
                 rotation={[0, -Math.PI / 4, 0]}
                 fov={75}
                 near={0.1}
-                far={10000}
+                far={100000}
                 makeDefault
             />
             <CustsceneController />
@@ -44,7 +44,7 @@ function App() {
                 <SpectatorControls />
             )}
 
-            <ambientLight intensity={Math.PI / 16} />
+            <ambientLight intensity={Math.PI / 4} />
 
             {/* Scene 1 - Minum-minum */}
 
