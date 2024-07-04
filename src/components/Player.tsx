@@ -66,6 +66,9 @@ export const Player: React.FC<PlayerProps> = (props) => {
         actions.Idle?.play();
     }, [actions]);
 
+    actions.Running?.setEffectiveTimeScale(0.5);
+    actions.Walking?.setEffectiveTimeScale(0.5);
+
     const setAnimation = (state: ActionName) => {
         if (currentState == state) return;
         if (actions && actions[state]) {
