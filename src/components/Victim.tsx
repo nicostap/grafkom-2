@@ -63,6 +63,8 @@ export function Victim(props: VictimProps) {
     const { actions } = useAnimations<GLTFAction>(animations, group);
     const activeAction = props.activeAction ?? "Idle";
 
+    actions.DrunkWalking?.setEffectiveTimeScale(0.5);
+
     useEffect(() => {
         actions[activeAction]?.reset().fadeIn(0.5).play();
 

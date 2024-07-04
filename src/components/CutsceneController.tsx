@@ -34,7 +34,11 @@ export function CustsceneController() {
             ongoingCutscene = false;
         }
 
-        setAppState({ ...appState, currentScene: cutscene, ongoingCutscene: ongoingCutscene })
+        setAppState({
+            ...appState,
+            currentScene: cutscene,
+            ongoingCutscene: ongoingCutscene,
+        });
 
         return () => {
             setAppState({ ...appState, ongoingCutscene: false });
@@ -48,7 +52,7 @@ export function CustsceneController() {
     }, [camera]);
 
     useFrame(() => {
-        if(!appState.ongoingCutscene) return;
+        if (!appState.ongoingCutscene) return;
         if (cutscene === 0) {
             const elapsed = performance.now() - startTime.current;
             const progress = Math.min(elapsed / duration1, 1);
@@ -85,10 +89,11 @@ export function CustsceneController() {
             camera.position.set(-10000, 100, 0);
             camera.rotation.set(0, 0, 0);
             setCutscene(3); // Prevent this block from running again
-        } else if (cutscene === 3) {
-            camera.position.set(0, 150, 0);
-            camera.rotation.set(0, 0, 0);
         }
+        //     } else if (cutscene === 3) {
+        //         // camera.position.set(0, 150, 0);
+        //         // camera.rotation.set(0, 0, 0);
+        //     }
     });
 
     return null;

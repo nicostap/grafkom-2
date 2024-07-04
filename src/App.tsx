@@ -55,20 +55,17 @@ function App() {
             )}
 
             {/* Scene 2 - Mabok-mabok */}
-            {appState.currentScene == 2 && (
-                <City
-                    receiveShadow
-                    castShadow
-                    position={[-10000, 100, 1000]}
-                    scale={[600, 600, 600]}
-                    rotation={[0, Math.PI / 2, 0]}
-                />
-            )}
+            <City
+                position={[-10000, 100, 1000]}
+                scale={[600, 600, 600]}
+                rotation={[0, Math.PI / 2, 0]}
+            />
+
             <Victim
-                position={[0, 10, -1000]}
+                position={[-9200, 100, 900]}
                 scale={[100, 100, 100]}
-                receiveShadow
-                castShadow
+                rotation={[0, Math.PI, 0]}
+                activeAction="DrunkWalking"
             />
         </Canvas>
     );
