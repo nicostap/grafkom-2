@@ -89,12 +89,12 @@ function App() {
                         rotation={[0, Math.PI, 0]}
                         updatePosition={playerPosition}
                     />
-                    <Clown
+                    {/* <Clown
                         position={[1000, 0, 1000]}
                         scale={[200, 200, 200]}
                         rotation={[0, Math.PI, 0]}
                         targetPosition={playerPosition.current}
-                    />
+                    /> */}
                 </>
             )}
         </Canvas>
