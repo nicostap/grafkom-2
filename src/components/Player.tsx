@@ -49,7 +49,7 @@ interface PlayerProps extends GroupProps {
 export const Player: React.FC<PlayerProps> = (props) => {
     const group = useRef<THREE.Group>(null);
     const { nodes, materials, animations } = useGLTF(
-        "/victim2-transformed.glb"
+        "/victim2-transformed copy 2.glb"
     ) as GLTFResult;
     const { actions } = useAnimations<GLTFAction>(animations, group);
 
@@ -326,4 +326,4 @@ export const Player: React.FC<PlayerProps> = (props) => {
     );
 };
 
-useGLTF.preload("/victim2-transformed.glb");
+useGLTF.preload("/victim2-transformed copy 2.glb");
