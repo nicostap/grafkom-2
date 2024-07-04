@@ -1,4 +1,9 @@
-import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
+import {
+    Bloom,
+    EffectComposer,
+    ToneMapping,
+    Vignette,
+} from "@react-three/postprocessing";
 import { BlendFunction, KernelSize, Resolution } from "postprocessing";
 
 export function PostProcessing() {
@@ -20,15 +25,15 @@ export function PostProcessing() {
                 eskil={false} // Eskil's vignette technique
                 blendFunction={BlendFunction.NORMAL} // blend mode
             />
-            {/* <ToneMapping
-                        blendFunction={BlendFunction.NORMAL} // blend mode
-                        adaptive={true} // toggle adaptive luminance map usage
-                        resolution={256} // texture resolution of the luminance map
-                        middleGrey={0.6} // middle grey factor
-                        maxLuminance={16.0} // maximum luminance
-                        averageLuminance={1.0} // average luminance
-                        adaptationRate={1.0} // luminance adaptation rate
-                    /> */}
+            <ToneMapping
+                blendFunction={BlendFunction.NORMAL} // blend mode
+                adaptive={true} // toggle adaptive luminance map usage
+                resolution={256} // texture resolution of the luminance map
+                middleGrey={0.6} // middle grey factor
+                maxLuminance={16.0} // maximum luminance
+                averageLuminance={1.0} // average luminance
+                adaptationRate={1.0} // luminance adaptation rate
+            />
         </EffectComposer>
     );
 }
