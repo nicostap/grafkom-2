@@ -52,6 +52,7 @@ function App() {
                 receiveShadow
                 position={[10000, 0, 0]}
                 scale={[60, 60, 60]}
+                visible={appState.freecamMode || appState.currentScene <= 3}
             />
 
             {/* Scene 2 - Mabok-mabok */}
@@ -59,7 +60,10 @@ function App() {
                 position={[-10000, 100, 1000]}
                 scale={[600, 600, 600]}
                 rotation={[0, Math.PI / 2, 0]}
-                visible={appState.currentScene >= 2}
+                visible={
+                    appState.freecamMode ||
+                    (appState.currentScene >= 2 && appState.currentScene < 4)
+                }
             />
 
             <Victim
@@ -67,6 +71,10 @@ function App() {
                 scale={[100, 100, 100]}
                 rotation={[0, Math.PI, 0]}
                 activeAction="DrunkIdle"
+                visible={
+                    appState.freecamMode ||
+                    (appState.currentScene >= 2 && appState.currentScene < 4)
+                }
             />
 
             {/* Scene 3 - Mabok-mabok */}
