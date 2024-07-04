@@ -14,8 +14,6 @@ import { CustsceneController } from "./components/CutsceneController";
 import { useAppContext } from "./components/AppContext";
 import { QuickStateToggle } from "./components/QuickStateToggle";
 import { BarScene } from "./components/BarScene";
-import { Player } from "./components/Player";
-import { Clown } from "./components/Clown";
 
 function App() {
     const [appState] = useAppContext();
@@ -28,7 +26,7 @@ function App() {
             <Suspense fallback={null}>
                 <PostProcessing />
             </Suspense>
-            <Perf />
+            {/* <Perf /> */}
             <PerspectiveCamera
                 position={[10000 - 200, 250, 300]}
                 rotation={[0, -Math.PI / 4, 0]}
@@ -46,19 +44,19 @@ function App() {
             <ambientLight intensity={Math.PI / 16} />
 
             {/* Scene 1 - Minum-minum */}
-            {appState.currentScene <= 1 && (
-                <BarScene
-                    receiveShadow
-                    position={[10000, 0, 0]}
-                    scale={[60, 60, 60]}
-                />
-            )}
+
+            <BarScene
+                receiveShadow
+                position={[10000, 0, 0]}
+                scale={[60, 60, 60]}
+            />
 
             {/* Scene 2 - Mabok-mabok */}
             <City
                 position={[-10000, 100, 1000]}
                 scale={[600, 600, 600]}
                 rotation={[0, Math.PI / 2, 0]}
+                visible={appState.currentScene >= 2}
             />
 
             <Victim
