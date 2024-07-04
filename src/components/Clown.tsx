@@ -97,12 +97,12 @@ export const Clown: React.FC<ClownProps> = (props) => {
         const middleSight = rightRay ? rightRay.distance : 10000;
 
         // Decision Heuristics
-        if (middleSight < 40) decision.forward = false;
+        if (middleSight < 30) decision.forward = false;
         if (
             distanceTo(
                 ...props.targetPosition,
                 ...group.current.position.toArray()
-            ) < 50
+            ) < 30
         )
             decision.forward = false;
         if (leftSight <= 240 && leftSight < rightSight) {
@@ -125,9 +125,9 @@ export const Clown: React.FC<ClownProps> = (props) => {
                     360) %
                 360;
             if (subAngle <= 177) {
-                decision.left = true;
-            } else if (subAngle >= 183) {
                 decision.right = true;
+            } else if (subAngle >= 183) {
+                decision.left = true;
             }
         }
 
@@ -153,7 +153,7 @@ export const Clown: React.FC<ClownProps> = (props) => {
             group.current.position.set(...prev_position.toArray());
 
         if (v > 0) {
-            setAnimation('Running');
+            setAnimation("Running");
         } else if (v == 0) {
             setAnimation("Idle");
         }
