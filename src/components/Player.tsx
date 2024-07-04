@@ -103,16 +103,8 @@ export const Player: React.FC<PlayerProps> = (props) => {
             case "KeyS":
                 v.current = -1;
                 break;
-            case "KeyA":
-                group.current.rotation.y += (4 * Math.PI) / 180;
-                // cameraAngle.current += (2 * Math.PI) / 180;
-                break;
-            case "KeyD":
-                group.current.rotation.y -= (4 * Math.PI) / 180;
-                // cameraAngle.current -= (2 * Math.PI) / 180;
-                break;
             case "ShiftLeft":
-                walkingSpeed.current = 5;
+                walkingSpeed.current = 2;
                 break;
             default:
                 break;
@@ -130,7 +122,7 @@ export const Player: React.FC<PlayerProps> = (props) => {
                 v.current = 0;
                 break;
             case "ShiftLeft":
-                walkingSpeed.current = 3;
+                walkingSpeed.current = 1;
                 break;
             case " ":
                 setCameraState(cameraState == "TPS" ? "FPS" : "TPS");
@@ -152,10 +144,29 @@ export const Player: React.FC<PlayerProps> = (props) => {
     useFrame((state, dt) => {
         if (!group.current) return;
 
+        if (keyState.current["KeyA"]) group.current.rotation.y += Math.PI * dt;
+        if (keyState.current["KeyD"]) group.current.rotation.y -= Math.PI * dt;
+
+        const prev_position = group.current.position.clone();
+        group.current.position.add(
+            new THREE.Vector3(
+                5 *
+                    (dt / 0.016) *
+                    walkingSpeed.current *
+                    v.current *
+                    Math.sin(group.current.rotation.y),
+                0,
+                5 *
+                    (dt / 0.016) *
+                    walkingSpeed.current *
+                    v.current *
+                    Math.cos(group.current.rotation.y)
+            )
+        );
         raycaster.set(
             new THREE.Vector3(
                 group.current.position.x,
-                150,
+                100,
                 group.current.position.z
             ),
             new THREE.Vector3(
@@ -164,28 +175,10 @@ export const Player: React.FC<PlayerProps> = (props) => {
                 Math.cos(group.current.rotation.y)
             ).normalize()
         );
-
         const middleRay = raycaster.intersectObjects(state.scene.children)[0];
         const middleSight = middleRay ? middleRay.distance : 10000;
 
-        const prev_position = group.current.position.clone();
-        group.current.position.add(
-            new THREE.Vector3(
-                10 *
-                    (dt / 0.016) *
-                    walkingSpeed.current *
-                    v.current *
-                    Math.sin(group.current.rotation.y),
-                0,
-                10 *
-                    (dt / 0.016) *
-                    walkingSpeed.current *
-                    v.current *
-                    Math.cos(group.current.rotation.y)
-            )
-        );
-
-        if (middleSight < 10)
+        if (middleSight < 40)
             group.current.position.set(...prev_position.toArray());
 
         props.updatePosition.current = group.current.position.toArray();
@@ -227,7 +220,7 @@ export const Player: React.FC<PlayerProps> = (props) => {
             if (keyState.current["ArrowDown"])
                 cameraVerticalAngle.current = Math.min(
                     cameraVerticalAngle.current + 2 * dt,
-                    Math.PI / 4
+                    Math.PI / 2
                 );
 
             let cameraInside = false;
