@@ -26,7 +26,7 @@ function App() {
             <Suspense fallback={null}>
                 <PostProcessing />
             </Suspense>
-            {/* <Perf /> */}
+            <Perf />
             <PerspectiveCamera
                 position={[10000 - 200, 250, 300]}
                 rotation={[0, -Math.PI / 4, 0]}
