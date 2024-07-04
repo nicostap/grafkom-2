@@ -77,7 +77,7 @@ function App() {
             {/* Scene 3 - Chase */}
             {appState.currentScene === 3 && (
                 <>
-                    <Maze receiveShadow position={[0, 0, 0]} />
+                    <Maze receiveShadow position={[0, -10, 0]} />
                     <Player
                         position={[0, 0, 0]}
                         scale={[100, 100, 100]}

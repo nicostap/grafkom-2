@@ -42,7 +42,9 @@ type ContextType = Record<
 >;
 
 interface PlayerProps extends GroupProps {
-    updatePosition: React.Dispatch<React.SetStateAction<[number, number, number]>>;
+    updatePosition: React.Dispatch<
+        React.SetStateAction<[number, number, number]>
+    >;
 }
 
 export const Player: React.FC<PlayerProps> = (props) => {
@@ -56,13 +58,12 @@ export const Player: React.FC<PlayerProps> = (props) => {
 
     const { raycaster } = useThree();
 
-    const [v, setV] = useState<number>(0);
-    const [walkingSpeed, setWalkingSpeed] = useState<number>(1);
+    const v = useRef<number>(0);
+    const walkingSpeed = useRef<number>(1);
     const [cameraState, setCameraState] = useState<string>("TPS");
-    const [cameraAngle, setCameraAngle] = useState<number>(0);
+    const cameraAngle = useRef<number>(0);
 
     useEffect(() => {
-        console.log("test");
         actions.Idle?.play();
     }, [actions]);
 
@@ -80,24 +81,24 @@ export const Player: React.FC<PlayerProps> = (props) => {
         switch (event.key) {
             case "W":
             case "w":
-                setV(1);
+                v.current = 1;
                 break;
             case "S":
             case "s":
-                setV(-1);
+                v.current = -1;
                 break;
             case "A":
             case "a":
-                group.current.rotation.y += ((1 / 0.016) * 2 * Math.PI) / 180;
-                setCameraAngle(cameraAngle + (2 * Math.PI) / 180);
+                group.current.rotation.y += (2 * Math.PI) / 180;
+                cameraAngle.current += (2 * Math.PI) / 180;
                 break;
             case "D":
             case "d":
-                group.current.rotation.y -= ((1 / 0.016) * 2 * Math.PI) / 180;
-                setCameraAngle(cameraAngle - (2 * Math.PI) / 180);
+                group.current.rotation.y -= (2 * Math.PI) / 180;
+                cameraAngle.current -= (2 * Math.PI) / 180;
                 break;
             case "Shift":
-                setWalkingSpeed(3);
+                walkingSpeed.current = 3;
                 break;
             default:
                 break;
@@ -110,10 +111,10 @@ export const Player: React.FC<PlayerProps> = (props) => {
             case "w":
             case "S":
             case "s":
-                setV(0);
+                v.current = 0;
                 break;
             case "Shift":
-                setWalkingSpeed(1);
+                walkingSpeed.current = 1;
                 break;
             case " ":
                 setCameraState(cameraState == "TPS" ? "FPS" : "TPS");
@@ -134,10 +135,13 @@ export const Player: React.FC<PlayerProps> = (props) => {
 
     useFrame((state, dt) => {
         if (!group.current) return;
-        console.log(dt);
 
         raycaster.set(
-            new THREE.Vector3(group.current.position.x, 150, group.current.position.z),
+            new THREE.Vector3(
+                group.current.position.x,
+                150,
+                group.current.position.z
+            ),
             new THREE.Vector3(
                 Math.sin(group.current.rotation.y),
                 0,
@@ -150,14 +154,14 @@ export const Player: React.FC<PlayerProps> = (props) => {
         const prev_position = group.current.position.clone();
         group.current.position.add(
             new THREE.Vector3(
-                (dt / 0.016) *
-                    walkingSpeed *
-                    v *
+                2 * (dt / 0.016) *
+                    walkingSpeed.current*
+                    v.current *
                     Math.sin(group.current.rotation.y),
                 0,
-                (dt / 0.016) *
-                    walkingSpeed *
-                    v *
+                2 * (dt / 0.016) *
+                    walkingSpeed.current*
+                    v.current *
                     Math.cos(group.current.rotation.y)
             )
         );
@@ -166,32 +170,33 @@ export const Player: React.FC<PlayerProps> = (props) => {
 
         props.updatePosition(group.current.position.toArray());
 
-        if (v == 1) {
-            if (walkingSpeed == 1) {
+        if (v.current == 1) {
+            if (walkingSpeed.current== 1) {
                 setAnimation("Walking");
             } else {
                 setAnimation("Running");
             }
-        } else if (v == -1) {
+        } else if (v.current == -1) {
             setAnimation("WalkingBackwards");
-        } else if (v == 0) {
+        } else if (v.current == 0) {
             setAnimation("Idle");
         }
 
         if (cameraState == "TPS") {
+            let cameraInside = false;
             let cameraDistance = 300;
-            let intersects = [];
             let count = 0;
             do {
                 count++;
+                cameraInside = false;
                 state.camera.position.set(
                     group.current.position.x -
-                        cameraDistance * Math.sin(cameraAngle),
+                        cameraDistance * Math.sin(cameraAngle.current),
                     150 +
                         group.current.position.y +
                         cameraDistance * Math.sin(Math.PI / 9),
                     group.current.position.z -
-                        cameraDistance * Math.cos(cameraAngle)
+                        cameraDistance * Math.cos(cameraAngle.current)
                 );
                 state.camera.lookAt(
                     group.current.position.x,
@@ -199,20 +204,22 @@ export const Player: React.FC<PlayerProps> = (props) => {
                     group.current.position.z
                 );
 
-                const direction = new THREE.Vector3();
-                state.camera.getWorldDirection(direction);
-                raycaster.set(state.camera.position, direction);
-
-                intersects = raycaster.intersectObjects(
-                    state.scene.children
-                );
+                const boundingBox = new THREE.Box3();
+                state.scene.traverse((object) => {
+                    if (object instanceof THREE.Mesh) {
+                        boundingBox.setFromObject(object);
+                        if (boundingBox.containsPoint(state.camera.position)) {
+                            cameraInside = true;
+                        }
+                    }
+                });
                 cameraDistance -= 30;
-            } while (intersects.length > 0 && intersects[0].object === group.current);
-            console.log("Hit done", count);
+            } while (cameraInside);
+            console.log(count);
         } else if (cameraState == "FPS") {
             state.camera.position.set(
                 group.current.position.x,
-                185,
+                200,
                 group.current.position.z
             );
             state.camera.rotation.set(0, group.current.rotation.y + Math.PI, 0);
@@ -288,6 +295,6 @@ export const Player: React.FC<PlayerProps> = (props) => {
             </group>
         </group>
     );
-}
+};
 
 useGLTF.preload("/victim2-transformed.glb");

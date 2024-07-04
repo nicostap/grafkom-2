@@ -93,8 +93,8 @@ export const Clown: React.FC<ClownProps> = (props) => {
         const rightRay = raycaster.intersectObjects(state.scene.children)[0];
 
         const leftSight = leftRay ? leftRay.distance : 10000;
-        const rightSight = middleRay ? leftRay.distance : 10000;
-        const middleSight = rightRay ? leftRay.distance : 10000;
+        const rightSight = middleRay ? middleRay.distance : 10000;
+        const middleSight = rightRay ? rightRay.distance : 10000;
 
         // Decision Heuristics
         if (middleSight < 40) decision.forward = false;
