@@ -8,8 +8,8 @@ export function BarScene(props: JSX.IntrinsicElements["group"]) {
             <Bar2 receiveShadow />
             {/* mesh won't appear for some reason */}
             <Victim2
-                position={[6.5, 0.5, -1]}
-                rotation={[0, Math.PI + Math.PI / 4, 0]}
+                position={[-4.5, 0.5, -1]}
+                rotation={[0, Math.PI - Math.PI / 4, 0]}
                 scale={[2.5, 2.5, 2.5]}
                 activeAction="Drinking"
             />
