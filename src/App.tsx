@@ -14,9 +14,12 @@ import { CustsceneController } from "./components/CutsceneController";
 import { useAppContext } from "./components/AppContext";
 import { QuickStateToggle } from "./components/QuickStateToggle";
 import { BarScene } from "./components/BarScene";
+import { Player } from "./components/Player";
+import { Clown } from "./components/Clown";
 
 function App() {
     const { appState } = useAppContext();
+    const [playerPosition, updatePlayerPosition] = useState<[number, number, number]>([0, 0, 0]);
 
     return (
         <Canvas shadows>
@@ -42,7 +45,7 @@ function App() {
             )}
 
             <ambientLight intensity={Math.PI / 16} />
-            <Maze receiveShadow position={[0, 0, 0]} />
+
             {/* Scene 1 - Minum-minum */}
             <BarScene
                 receiveShadow
@@ -64,6 +67,29 @@ function App() {
                 receiveShadow
                 castShadow
             />
+
+            {/* Scene 3 - Chase */}
+            <Maze receiveShadow position={[0, 0, 0]} />
+            {appState.currentScene > 2 && (
+                <>
+                    <Player
+                        position={[0, 0, 0]}
+                        scale={[100, 100, 100]}
+                        rotation={[0, 0, 0]}
+                        receiveShadow
+                        castShadow
+                        updatePosition={updatePlayerPosition}
+                    />
+                    <Clown 
+                        position={[1000, 0, 1000]}
+                        scale={[100, 100, 100]}
+                        rotation={[0, 0, 0]}
+                        receiveShadow
+                        castShadow
+                        targetPosition={playerPosition}
+                    />
+                </>
+            )}
         </Canvas>
     );
 }

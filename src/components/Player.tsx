@@ -41,7 +41,11 @@ type ContextType = Record<
     >
 >;
 
-export function Player(props: GroupProps) {
+interface PlayerProps extends GroupProps {
+    updatePosition: React.Dispatch<React.SetStateAction<[number, number, number]>>;
+}
+
+export const Player: React.FC<PlayerProps> = (props) => {
     const group = useRef<THREE.Group>(null);
     const { nodes, materials, animations } = useGLTF(
         "/victim2-transformed.glb"
@@ -58,7 +62,7 @@ export function Player(props: GroupProps) {
     const [cameraAngle, setCameraAngle] = useState<number>(0);
 
     useEffect(() => {
-        actions["Idle"]?.play();
+        actions.Idle?.play();
     }, [actions]);
 
     const setAnimation = (state: ActionName) => {
@@ -71,6 +75,7 @@ export function Player(props: GroupProps) {
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
+        if (!group.current) return;
         switch (event.key) {
             case "W":
             case "w":
@@ -82,19 +87,13 @@ export function Player(props: GroupProps) {
                 break;
             case "A":
             case "a":
-                group.current!.rotation.y += ((1 / 0.016) * 2 * Math.PI) / 180;
+                group.current.rotation.y += ((1 / 0.016) * 2 * Math.PI) / 180;
+                setCameraAngle(cameraAngle + (2 * Math.PI) / 180);
                 break;
             case "D":
             case "d":
-                group.current!.rotation.y -= ((1 / 0.016) * 2 * Math.PI) / 180;
-                break;
-            case "Q":
-            case "q":
+                group.current.rotation.y -= ((1 / 0.016) * 2 * Math.PI) / 180;
                 setCameraAngle(cameraAngle - (2 * Math.PI) / 180);
-                break;
-            case "E":
-            case "e":
-                setCameraAngle(cameraAngle + (2 * Math.PI) / 180);
                 break;
             case "Shift":
                 setWalkingSpeed(3);
@@ -136,7 +135,7 @@ export function Player(props: GroupProps) {
         if (!group.current) return;
 
         raycaster.set(
-            new THREE.Vector3(...group.current.position),
+            new THREE.Vector3(group.current.position.x, 150, group.current.position.z),
             new THREE.Vector3(
                 Math.sin(group.current.rotation.y),
                 0,
@@ -162,6 +161,8 @@ export function Player(props: GroupProps) {
         );
         if (middleSight < 40)
             group.current.position.set(...prev_position.toArray());
+
+        props.updatePosition(group.current.position.toArray());
 
         if (v == 1) {
             if (walkingSpeed == 1) {
@@ -215,7 +216,7 @@ export function Player(props: GroupProps) {
     });
 
     return (
-        <group ref={null} {...props} dispose={null}>
+        <group ref={group} {...props} dispose={null}>
             <group name="Scene">
                 <group
                     name="Armature"

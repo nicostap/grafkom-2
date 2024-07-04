@@ -30,15 +30,15 @@ export function CustsceneController() {
 
     useEffect(() => {
         if (cutscene === 0) {
-            setAppState({ ongoingCutscene: true });
+            setAppState({ ...appState, ongoingCutscene: true });
         } else if (cutscene === 3) {
-            setAppState({ ongoingCutscene: false });
+            setAppState({ ...appState, ongoingCutscene: false });
         }
 
         return () => {
-            setAppState({ ongoingCutscene: false });
+            setAppState({ ...appState, ongoingCutscene: false });
         };
-    }, [cutscene, setAppState]);
+    }, [cutscene, appState, setAppState]);
 
     useEffect(() => {
         camera.position.copy(startPosition1);
