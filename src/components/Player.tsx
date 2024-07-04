@@ -62,6 +62,8 @@ export const Player: React.FC<PlayerProps> = (props) => {
     const [cameraState, setCameraState] = useState<string>("TPS");
     const cameraAngle = useRef<number>(0);
 
+    const keyState = useRef<Record<string, boolean>>({});
+
     useEffect(() => {
         actions.Idle?.play();
     }, [actions]);
@@ -85,28 +87,28 @@ export const Player: React.FC<PlayerProps> = (props) => {
         actions[state]!.setEffectiveWeight(weight);
     };
 
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
         if (!group.current) return;
-        switch (event.key) {
-            case "W":
-            case "w":
+        const k = e.code;
+
+        keyState.current[k] = true;
+
+        switch (k) {
+            case "KeyW":
                 v.current = 1;
                 break;
-            case "S":
-            case "s":
+            case "KeyS":
                 v.current = -1;
                 break;
-            case "A":
-            case "a":
+            case "KeyA":
                 group.current.rotation.y += (2 * Math.PI) / 180;
-                cameraAngle.current += (2 * Math.PI) / 180;
+                // cameraAngle.current += (2 * Math.PI) / 180;
                 break;
-            case "D":
-            case "d":
+            case "KeyD":
                 group.current.rotation.y -= (2 * Math.PI) / 180;
-                cameraAngle.current -= (2 * Math.PI) / 180;
+                // cameraAngle.current -= (2 * Math.PI) / 180;
                 break;
-            case "Shift":
+            case "ShiftLeft":
                 walkingSpeed.current = 3;
                 break;
             default:
@@ -114,15 +116,17 @@ export const Player: React.FC<PlayerProps> = (props) => {
         }
     };
 
-    const handleKeyUp = (event: KeyboardEvent) => {
-        switch (event.key) {
-            case "W":
-            case "w":
-            case "S":
-            case "s":
+    const handleKeyUp = (e: KeyboardEvent) => {
+        const k = e.code;
+
+        keyState.current[k] = false;
+
+        switch (k) {
+            case "KeyW":
+            case "KeyS":
                 v.current = 0;
                 break;
-            case "Shift":
+            case "LeftShift":
                 walkingSpeed.current = 1;
                 break;
             case " ":
@@ -157,6 +161,7 @@ export const Player: React.FC<PlayerProps> = (props) => {
                 Math.cos(group.current.rotation.y)
             ).normalize()
         );
+
         const middleRay = raycaster.intersectObjects(state.scene.children)[0];
         const middleSight = middleRay ? middleRay.distance : 10000;
 
@@ -176,6 +181,7 @@ export const Player: React.FC<PlayerProps> = (props) => {
                     Math.cos(group.current.rotation.y)
             )
         );
+
         if (middleSight < 40)
             group.current.position.set(...prev_position.toArray());
 
@@ -194,6 +200,10 @@ export const Player: React.FC<PlayerProps> = (props) => {
         }
 
         if (cameraState == "TPS") {
+            // Adjust rotation based on arrow keys
+            if (keyState.current["ArrowLeft"]) cameraAngle.current -= 1 * dt;
+            if (keyState.current["ArrowRight"]) cameraAngle.current += 1 * dt;
+
             let cameraInside = false;
             let cameraDistance = 500;
             let count = 0;
