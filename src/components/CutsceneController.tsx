@@ -25,9 +25,9 @@ export function CustsceneController() {
         new THREE.Euler(0, Math.PI / 2, 0)
     );
     const endRotation2 = new THREE.Quaternion().setFromEuler(
-        new THREE.Euler(0, Math.PI*4/3, 0)
+        new THREE.Euler(0, (Math.PI * 4) / 3, 0)
     );
-    
+
     const startPosition3 = new THREE.Vector3(-9200, 250, -1000);
     const endPosition3 = new THREE.Vector3(-9200, 250, -1600);
     const startRotation3 = new THREE.Quaternion().setFromEuler(
@@ -43,11 +43,9 @@ export function CustsceneController() {
         new THREE.Euler(0, Math.PI, Math.PI)
     );
     const endRotation4 = new THREE.Quaternion().setFromEuler(
-        new THREE.Euler(Math.PI/3, Math.PI, 0)
+        new THREE.Euler(Math.PI / 3, Math.PI, 0)
     );
 
-
-    
     const [cutscene, setCutscene] = useState(0);
 
     const [appState, setAppState] = useAppContext();
@@ -107,7 +105,7 @@ export function CustsceneController() {
 
             if (progress === 1) {
                 startTime.current = performance.now();
-                setCutscene(2); 
+                setCutscene(2);
             }
         } else if (cutscene === 2) {
             const elapsed = performance.now() - startTime.current;
@@ -126,8 +124,7 @@ export function CustsceneController() {
                 startTime.current = performance.now();
                 setCutscene(3); // End of cutscenes
             } // Prevent this block from running again
-        }
-        else if (cutscene === 3) {
+        } else if (cutscene === 3) {
             const elapsed = performance.now() - startTime.current;
             const progress = Math.min(elapsed / duration4, 1);
 
