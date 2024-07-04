@@ -19,9 +19,6 @@ import { Clown } from "./components/Clown";
 
 function App() {
     const [appState] = useAppContext();
-    const [playerPosition, updatePlayerPosition] = useState<
-        [number, number, number]
-    >([0, 0, 0]);
 
     return (
         <Canvas shadows>
@@ -73,29 +70,6 @@ function App() {
                 receiveShadow
                 castShadow
             />
-
-            {/* Scene 3 - Chase */}
-            {appState.currentScene === 3 && (
-                <>
-                    <Maze receiveShadow position={[0, -10, 0]} />
-                    <Player
-                        position={[0, 0, 0]}
-                        scale={[100, 100, 100]}
-                        rotation={[0, 0, 0]}
-                        receiveShadow
-                        castShadow
-                        updatePosition={updatePlayerPosition}
-                    />
-                    <Clown
-                        position={[1000, 0, 1000]}
-                        scale={[100, 100, 100]}
-                        rotation={[0, 0, 0]}
-                        receiveShadow
-                        castShadow
-                        targetPosition={playerPosition}
-                    />
-                </>
-            )}
         </Canvas>
     );
 }

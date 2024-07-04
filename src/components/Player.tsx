@@ -154,13 +154,15 @@ export const Player: React.FC<PlayerProps> = (props) => {
         const prev_position = group.current.position.clone();
         group.current.position.add(
             new THREE.Vector3(
-                2 * (dt / 0.016) *
-                    walkingSpeed.current*
+                2 *
+                    (dt / 0.016) *
+                    walkingSpeed.current *
                     v.current *
                     Math.sin(group.current.rotation.y),
                 0,
-                2 * (dt / 0.016) *
-                    walkingSpeed.current*
+                2 *
+                    (dt / 0.016) *
+                    walkingSpeed.current *
                     v.current *
                     Math.cos(group.current.rotation.y)
             )
@@ -171,7 +173,7 @@ export const Player: React.FC<PlayerProps> = (props) => {
         props.updatePosition(group.current.position.toArray());
 
         if (v.current == 1) {
-            if (walkingSpeed.current== 1) {
+            if (walkingSpeed.current == 1) {
                 setAnimation("Walking");
             } else {
                 setAnimation("Running");
