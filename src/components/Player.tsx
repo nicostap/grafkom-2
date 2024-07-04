@@ -62,6 +62,7 @@ export const Player: React.FC<PlayerProps> = (props) => {
     const [cameraAngle, setCameraAngle] = useState<number>(0);
 
     useEffect(() => {
+        console.log("test");
         actions.Idle?.play();
     }, [actions]);
 
@@ -133,6 +134,7 @@ export const Player: React.FC<PlayerProps> = (props) => {
 
     useFrame((state, dt) => {
         if (!group.current) return;
+        console.log(dt);
 
         raycaster.set(
             new THREE.Vector3(group.current.position.x, 150, group.current.position.z),
@@ -142,8 +144,8 @@ export const Player: React.FC<PlayerProps> = (props) => {
                 Math.cos(group.current.rotation.y)
             ).normalize()
         );
-        const middleSight = raycaster.intersectObjects(state.scene.children)[0]
-            .distance;
+        const middleRay = raycaster.intersectObjects(state.scene.children)[0];
+        const middleSight = middleRay ? middleRay.distance : 10000;
 
         const prev_position = group.current.position.clone();
         group.current.position.add(
@@ -179,7 +181,9 @@ export const Player: React.FC<PlayerProps> = (props) => {
         if (cameraState == "TPS") {
             let cameraDistance = 300;
             let intersects = [];
+            let count = 0;
             do {
+                count++;
                 state.camera.position.set(
                     group.current.position.x -
                         cameraDistance * Math.sin(cameraAngle),
@@ -191,7 +195,7 @@ export const Player: React.FC<PlayerProps> = (props) => {
                 );
                 state.camera.lookAt(
                     group.current.position.x,
-                    150,
+                    100,
                     group.current.position.z
                 );
 
@@ -200,11 +204,11 @@ export const Player: React.FC<PlayerProps> = (props) => {
                 raycaster.set(state.camera.position, direction);
 
                 intersects = raycaster.intersectObjects(
-                    state.scene.children,
-                    true
+                    state.scene.children
                 );
-                cameraDistance -= 10;
-            } while (intersects.length > 0 && intersects[0].distance < 1);
+                cameraDistance -= 30;
+            } while (intersects.length > 0 && intersects[0].object === group.current);
+            console.log("Hit done", count);
         } else if (cameraState == "FPS") {
             state.camera.position.set(
                 group.current.position.x,

@@ -72,8 +72,7 @@ export const Clown: React.FC<ClownProps> = (props) => {
                 Math.cos(group.current.rotation.y + Math.PI / 4)
             ).normalize()
         );
-        const leftSight = raycaster.intersectObjects(state.scene.children)[0]
-            .distance;
+        const leftRay = raycaster.intersectObjects(state.scene.children)[0];
         raycaster.set(
             new THREE.Vector3(...group.current.position),
             new THREE.Vector3(
@@ -82,8 +81,7 @@ export const Clown: React.FC<ClownProps> = (props) => {
                 Math.cos(group.current.rotation.y)
             ).normalize()
         );
-        const middleSight = raycaster.intersectObjects(state.scene.children)[0]
-            .distance;
+        const middleRay = raycaster.intersectObjects(state.scene.children)[0];
         raycaster.set(
             new THREE.Vector3(...group.current.position),
             new THREE.Vector3(
@@ -92,8 +90,11 @@ export const Clown: React.FC<ClownProps> = (props) => {
                 Math.cos(group.current.rotation.y - Math.PI / 4)
             ).normalize()
         );
-        const rightSight = raycaster.intersectObjects(state.scene.children)[0]
-            .distance;
+        const rightRay = raycaster.intersectObjects(state.scene.children)[0];
+
+        const leftSight = leftRay ? leftRay.distance : 10000;
+        const rightSight = middleRay ? leftRay.distance : 10000;
+        const middleSight = rightRay ? leftRay.distance : 10000;
 
         // Decision Heuristics
         if (middleSight < 40) decision.forward = false;
