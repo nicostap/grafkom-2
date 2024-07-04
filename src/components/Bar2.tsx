@@ -181,6 +181,10 @@ export function Bar2(props: JSX.IntrinsicElements["group"]) {
     // Allow both sides of the texture to be rendered for glass
     materials["magnifying_glass_01_lense.001"].side = THREE.DoubleSide;
     materials["magnifying_glass_01_lense.001"].transparent = true;
+    materials["magnifying_glass_01_lense.001"].opacity = 0.2;
+    materials["magnifying_glass_01_lense.001"].color = new THREE.Color(
+        0xffffff
+    );
 
     return (
         <group {...props} dispose={null}>

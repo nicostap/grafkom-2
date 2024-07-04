@@ -211,9 +211,9 @@ class SpectatorControlsClass {
         if (press & DOWN) velocity.y = -actualMoveSpeed;
 
         if (press & ROLL_CW)
-            this.camera.rotation.z += this.lookSpeed * delta * 3000;
+            this.camera.rotation.z += this.lookSpeed * delta * 8000;
         if (press & ROLL_CCW)
-            this.camera.rotation.z -= this.lookSpeed * delta * 3000;
+            this.camera.rotation.z -= this.lookSpeed * delta * 8000;
 
         this._moveCamera(velocity);
 

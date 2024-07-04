@@ -3,6 +3,7 @@ import { useThree, useFrame, GroupProps } from "@react-three/fiber";
 import { useRef, useState, useEffect } from "react";
 import * as THREE from "three";
 import { GLTF } from "three-stdlib";
+import { SimpleLight } from "./SimpleLight";
 
 type GLTFResult = GLTF & {
     nodes: {
@@ -42,9 +43,7 @@ type ContextType = Record<
 >;
 
 interface PlayerProps extends GroupProps {
-    updatePosition: React.Dispatch<
-        React.SetStateAction<[number, number, number]>
-    >;
+    updatePosition: React.MutableRefObject<[number, number, number]>;
 }
 
 export const Player: React.FC<PlayerProps> = (props) => {
@@ -170,7 +169,7 @@ export const Player: React.FC<PlayerProps> = (props) => {
         if (middleSight < 40)
             group.current.position.set(...prev_position.toArray());
 
-        props.updatePosition(group.current.position.toArray());
+        props.updatePosition.current = group.current.position.toArray();
 
         if (v.current == 1) {
             if (walkingSpeed.current == 1) {
@@ -186,7 +185,7 @@ export const Player: React.FC<PlayerProps> = (props) => {
 
         if (cameraState == "TPS") {
             let cameraInside = false;
-            let cameraDistance = 300;
+            let cameraDistance = 500;
             let count = 0;
             do {
                 count++;
@@ -217,7 +216,6 @@ export const Player: React.FC<PlayerProps> = (props) => {
                 });
                 cameraDistance -= 30;
             } while (cameraInside);
-            console.log(count);
         } else if (cameraState == "FPS") {
             state.camera.position.set(
                 group.current.position.x,
@@ -230,6 +228,25 @@ export const Player: React.FC<PlayerProps> = (props) => {
 
     return (
         <group ref={group} {...props} dispose={null}>
+            {group.current && (
+                <SimpleLight
+                    position={[
+                        group.current?.position.x,
+                        300,
+                        group.current?.position.z,
+                    ]}
+                    intensity={Math.PI}
+                    decay={0.2}
+                    targetPosition={[
+                        group.current?.position.x,
+                        0,
+                        group.current?.position.z,
+                    ]}
+                    angle={Math.PI / 3}
+                    penumbra={0.75}
+                    color={new THREE.Color(0xffb84c)}
+                />
+            )}
             <group name="Scene">
                 <group
                     name="Armature"

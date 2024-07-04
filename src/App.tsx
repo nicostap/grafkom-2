@@ -14,25 +14,28 @@ import { CustsceneController } from "./components/CutsceneController";
 import { useAppContext } from "./components/AppContext";
 import { QuickStateToggle } from "./components/QuickStateToggle";
 import { BarScene } from "./components/BarScene";
+import { Player } from "./components/Player";
+import { Clown } from "./components/Clown";
 
 function App() {
     const [appState] = useAppContext();
+    const playerPosition = useRef<[number, number, number]>([0, 0, 0]);
 
     return (
         <Canvas shadows>
             <QuickStateToggle />
             <SkyBox />
-            <fog attach="fog" far={8000} near={3000} color="darkgray" />
-            <Suspense fallback={null}>
+            {/* <fog attach="fog" far={8000} near={3000} color="darkgray" /> */}
+            {/* <Suspense fallback={null}>
                 <PostProcessing />
-            </Suspense>
+            </Suspense> */}
             <Perf />
             <PerspectiveCamera
                 position={[10000 - 200, 250, 300]}
                 rotation={[0, -Math.PI / 4, 0]}
                 fov={75}
                 near={0.1}
-                far={10000}
+                far={100000}
                 makeDefault
             />
             <CustsceneController />
@@ -41,7 +44,7 @@ function App() {
                 <SpectatorControls />
             )}
 
-            <ambientLight intensity={Math.PI / 16} />
+            <ambientLight intensity={Math.PI / 4} />
 
             {/* Scene 1 - Minum-minum */}
 
@@ -49,6 +52,7 @@ function App() {
                 receiveShadow
                 position={[10000, 0, 0]}
                 scale={[60, 60, 60]}
+                visible={appState.freecamMode || appState.currentScene <= 3}
             />
 
             {/* Scene 2 - Mabok-mabok */}
@@ -56,7 +60,10 @@ function App() {
                 position={[-10000, 100, 1000]}
                 scale={[600, 600, 600]}
                 rotation={[0, Math.PI / 2, 0]}
-                visible={appState.currentScene >= 2}
+                visible={
+                    appState.freecamMode ||
+                    (appState.currentScene >= 2 && appState.currentScene < 4)
+                }
             />
 
             <Victim
@@ -64,7 +71,30 @@ function App() {
                 scale={[100, 100, 100]}
                 rotation={[0, Math.PI, 0]}
                 activeAction="DrunkIdle"
+                visible={
+                    appState.freecamMode ||
+                    (appState.currentScene >= 2 && appState.currentScene < 4)
+                }
             />
+
+            {/* Scene 3 - Mabok-mabok */}
+            {!appState.ongoingCutscene && (
+                <>
+                    <Maze position={[0, -30, 0]}></Maze>
+                    <Player
+                        position={[0, 0, 0]}
+                        scale={[200, 200, 200]}
+                        rotation={[0, Math.PI, 0]}
+                        updatePosition={playerPosition}
+                    />
+                    <Clown
+                        position={[1000, 0, 1000]}
+                        scale={[200, 200, 200]}
+                        rotation={[0, Math.PI, 0]}
+                        targetPosition={playerPosition.current}
+                    />
+                </>
+            )}
         </Canvas>
     );
 }
