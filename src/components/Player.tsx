@@ -53,7 +53,7 @@ export const Player: React.FC<PlayerProps> = (props) => {
     ) as GLTFResult;
     const { actions } = useAnimations<GLTFAction>(animations, group);
 
-    const [currentState, setCurrentState] = useState<ActionName>("Idle");
+    const currentState = useRef<ActionName>("Idle");
 
     const { raycaster } = useThree();
 
@@ -66,16 +66,23 @@ export const Player: React.FC<PlayerProps> = (props) => {
         actions.Idle?.play();
     }, [actions]);
 
-    actions.Running?.setEffectiveTimeScale(0.5);
-    actions.Walking?.setEffectiveTimeScale(0.5);
-
-    const setAnimation = (state: ActionName) => {
-        if (currentState == state) return;
-        if (actions && actions[state]) {
-            actions[currentState]!.fadeOut(0.5);
-            actions[state]!.reset().fadeIn(0.5).play();
-            setCurrentState(state);
-        }
+    const crossFade = (state: ActionName, duration = 0.1) => {
+        if (currentState.current == state) return;
+        if (!actions[state] || !actions[currentState.current]) return;
+        setWeight(state, 1);
+        actions[state]!.time = 0;
+        actions[currentState.current]!.crossFadeTo(
+            actions[state]!,
+            duration,
+            true
+        );
+        actions[state]!.play();
+        currentState.current = state;
+    };
+    const setWeight = (state: ActionName, weight: number) => {
+        actions[state]!.enabled = true;
+        actions[state]!.setEffectiveTimeScale(1);
+        actions[state]!.setEffectiveWeight(weight);
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -176,14 +183,14 @@ export const Player: React.FC<PlayerProps> = (props) => {
 
         if (v.current == 1) {
             if (walkingSpeed.current == 1) {
-                setAnimation("Walking");
+                crossFade("Walking");
             } else {
-                setAnimation("Running");
+                crossFade("Running");
             }
         } else if (v.current == -1) {
-            setAnimation("WalkingBackwards");
+            crossFade("WalkingBackwards");
         } else if (v.current == 0) {
-            setAnimation("Idle");
+            crossFade("Idle");
         }
 
         if (cameraState == "TPS") {

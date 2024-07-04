@@ -38,7 +38,7 @@ export const Clown: React.FC<ClownProps> = (props) => {
     ) as GLTFResult;
     const { actions } = useAnimations<GLTFAction>(animations, group);
 
-    const [currentState, setCurrentState] = useState<ActionName>("Idle");
+    const currentState = useRef<ActionName>("Idle");
 
     const { raycaster } = useThree();
 
@@ -53,13 +53,23 @@ export const Clown: React.FC<ClownProps> = (props) => {
         actions.Idle?.play();
     }, [actions]);
 
-    const setAnimation = (state: ActionName) => {
-        if (currentState == state) return;
-        if (actions && actions[state]) {
-            actions[currentState]!.fadeOut(0.5);
-            actions[state]!.reset().fadeIn(0.5).play();
-            setCurrentState(state);
-        }
+    const crossFade = (state: ActionName, duration = 0.1) => {
+        if (currentState.current == state) return;
+        if (!actions[state] || !actions[currentState.current]) return;
+        setWeight(state, 1);
+        actions[state]!.time = 0;
+        actions[currentState.current]!.crossFadeTo(
+            actions[state]!,
+            duration,
+            true
+        );
+        actions[state]!.play();
+        currentState.current = state;
+    };
+    const setWeight = (state: ActionName, weight: number) => {
+        actions[state]!.enabled = true;
+        actions[state]!.setEffectiveTimeScale(1);
+        actions[state]!.setEffectiveWeight(weight);
     };
 
     useFrame((state, dt) => {
@@ -153,9 +163,9 @@ export const Clown: React.FC<ClownProps> = (props) => {
             group.current.position.set(...prev_position.toArray());
 
         if (v > 0) {
-            setAnimation("Running");
+            crossFade("Running");
         } else if (v == 0) {
-            setAnimation("Idle");
+            crossFade("Idle");
         }
     });
 
