@@ -20,9 +20,9 @@ export function City(props: GroupProps) {
     };
 
     // Each row should have 20 buildings
-    const buildingsPerRow = 20;
-    const streetLightsPerRow = 30;
-    const roadsPerRow = 60;
+    const buildingsPerRow = 10;
+    const streetLightsPerRow = 15;
+    const roadsPerRow = 31;
     const distanceBetweenRoads = 1.425;
     const distanceBetweenStreetLights = 1.5;
     const distanceBetweenBuildings = 2;

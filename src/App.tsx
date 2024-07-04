@@ -18,7 +18,7 @@ import { Player } from "./components/Player";
 import { Clown } from "./components/Clown";
 
 function App() {
-    const { appState } = useAppContext();
+    const [appState] = useAppContext();
     const [playerPosition, updatePlayerPosition] = useState<
         [number, number, number]
     >([0, 0, 0]);
