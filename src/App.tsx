@@ -22,7 +22,6 @@ function App() {
     const [playerPosition, updatePlayerPosition] = useState<
         [number, number, number]
     >([0, 0, 0]);
-    console.log("Render main");
 
     return (
         <Canvas shadows>
@@ -50,20 +49,24 @@ function App() {
             <ambientLight intensity={Math.PI / 16} />
 
             {/* Scene 1 - Minum-minum */}
-            <BarScene
-                receiveShadow
-                position={[10000, 0, 0]}
-                scale={[60, 60, 60]}
-            />
+            {appState.currentScene <= 1 && (
+                <BarScene
+                    receiveShadow
+                    position={[10000, 0, 0]}
+                    scale={[60, 60, 60]}
+                />
+            )}
 
             {/* Scene 2 - Mabok-mabok */}
-            <City
-                receiveShadow
-                castShadow
-                position={[-10000, 100, 1000]}
-                scale={[600, 600, 600]}
-                rotation={[0, Math.PI / 2, 0]}
-            />
+            {appState.currentScene == 2 && (
+                <City
+                    receiveShadow
+                    castShadow
+                    position={[-10000, 100, 1000]}
+                    scale={[600, 600, 600]}
+                    rotation={[0, Math.PI / 2, 0]}
+                />
+            )}
             <Victim
                 position={[0, 10, -1000]}
                 scale={[100, 100, 100]}
@@ -72,9 +75,9 @@ function App() {
             />
 
             {/* Scene 3 - Chase */}
-            <Maze receiveShadow position={[0, 0, 0]} />
-            {appState.currentScene > 2 && (
+            {appState.currentScene === 3 && (
                 <>
+                    <Maze receiveShadow position={[0, 0, 0]} />
                     <Player
                         position={[0, 0, 0]}
                         scale={[100, 100, 100]}
