@@ -25,10 +25,10 @@ function App() {
         <Canvas shadows>
             <QuickStateToggle />
             <SkyBox />
-            {/* <fog attach="fog" far={8000} near={3000} color="darkgray" /> */}
-            {/* <Suspense fallback={null}>
+            <fog attach="fog" far={8000} near={3000} color="darkgray" />
+            <Suspense fallback={null}>
                 <PostProcessing />
-            </Suspense> */}
+            </Suspense>
             <Perf />
             <PerspectiveCamera
                 position={[10000 - 200, 250, 300]}
@@ -44,7 +44,7 @@ function App() {
                 <SpectatorControls />
             )}
 
-            <ambientLight intensity={Math.PI / 4} />
+            <ambientLight intensity={Math.PI / 8} />
 
             {/* Scene 1 - Minum-minum */}
 
@@ -67,7 +67,7 @@ function App() {
             />
 
             <Victim
-                position={[-9200, 100, -900]}
+                position={[-9200, 100, -800]}
                 scale={[100, 100, 100]}
                 rotation={[0, Math.PI, 0]}
                 activeAction="DrunkIdle"
@@ -78,9 +78,9 @@ function App() {
             />
 
             {/* Scene 3 - Mabok-mabok */}
-            {!appState.ongoingCutscene && (
+            {!appState.ongoingCutscene && !appState.freecamMode && (
                 <>
-                    <Maze position={[0, -30, 0]}></Maze>
+                    <Maze position={[0, -50, 0]}></Maze>
                     <Player
                         position={[0, 0, 0]}
                         scale={[200, 200, 200]}

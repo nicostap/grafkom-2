@@ -39,11 +39,19 @@ export function Maze(props: GroupProps) {
                                     frustumCulled
                                 />
                                 <SimpleLight
-                                    position={[i * 500 - 500, 500, j * 500 - 500]}
+                                    position={[
+                                        i * 500 - 500,
+                                        500,
+                                        j * 500 - 500,
+                                    ]}
                                     intensity={Math.PI * 2}
                                     castShadow
                                     decay={0.01}
-                                    targetPosition={[i * 500 - 500, 0, j * 500 - 500]}
+                                    targetPosition={[
+                                        i * 500 - 500,
+                                        0,
+                                        j * 500 - 500,
+                                    ]}
                                     angle={Math.PI / 3}
                                     penumbra={0.75}
                                     color="#CC0000"

@@ -61,6 +61,8 @@ export const Player: React.FC<PlayerProps> = (props) => {
     const walkingSpeed = useRef<number>(1);
     const [cameraState, setCameraState] = useState<string>("TPS");
     const cameraAngle = useRef<number>(Math.PI);
+    const cameraVerticalAngle = useRef<number>(Math.PI / 9);
+    const userCameraDistance = useRef<number>(500);
 
     const keyState = useRef<Record<string, boolean>>({});
 
@@ -101,15 +103,15 @@ export const Player: React.FC<PlayerProps> = (props) => {
                 v.current = -1;
                 break;
             case "KeyA":
-                group.current.rotation.y += (2 * Math.PI) / 180;
+                group.current.rotation.y += (4 * Math.PI) / 180;
                 // cameraAngle.current += (2 * Math.PI) / 180;
                 break;
             case "KeyD":
-                group.current.rotation.y -= (2 * Math.PI) / 180;
+                group.current.rotation.y -= (4 * Math.PI) / 180;
                 // cameraAngle.current -= (2 * Math.PI) / 180;
                 break;
             case "ShiftLeft":
-                walkingSpeed.current = 3;
+                walkingSpeed.current = 5;
                 break;
             default:
                 break;
@@ -126,8 +128,8 @@ export const Player: React.FC<PlayerProps> = (props) => {
             case "KeyS":
                 v.current = 0;
                 break;
-            case "LeftShift":
-                walkingSpeed.current = 1;
+            case "ShiftLeft":
+                walkingSpeed.current = 3;
                 break;
             case " ":
                 setCameraState(cameraState == "TPS" ? "FPS" : "TPS");
@@ -168,13 +170,13 @@ export const Player: React.FC<PlayerProps> = (props) => {
         const prev_position = group.current.position.clone();
         group.current.position.add(
             new THREE.Vector3(
-                2 *
+                10 *
                     (dt / 0.016) *
                     walkingSpeed.current *
                     v.current *
                     Math.sin(group.current.rotation.y),
                 0,
-                2 *
+                10 *
                     (dt / 0.016) *
                     walkingSpeed.current *
                     v.current *
@@ -182,7 +184,7 @@ export const Player: React.FC<PlayerProps> = (props) => {
             )
         );
 
-        if (middleSight < 40)
+        if (middleSight < 10)
             group.current.position.set(...prev_position.toArray());
 
         props.updatePosition.current = group.current.position.toArray();
@@ -200,17 +202,45 @@ export const Player: React.FC<PlayerProps> = (props) => {
         }
 
         if (cameraState == "TPS") {
+            const maxCameraDistance = 500;
+
+            // Adjust rotation based on arrow keys
+            if (keyState.current["ArrowLeft"]) cameraAngle.current -= 2 * dt;
+            if (keyState.current["ArrowRight"]) cameraAngle.current += 2 * dt;
+
+            if (keyState.current["KeyQ"])
+                userCameraDistance.current -= 300 * dt;
+            if (keyState.current["KeyE"])
+                userCameraDistance.current += 300 * dt;
+
+            if (userCameraDistance.current < 300)
+                userCameraDistance.current = 300;
+            if (userCameraDistance.current > maxCameraDistance)
+                userCameraDistance.current = maxCameraDistance;
+
+            if (keyState.current["ArrowUp"])
+                cameraVerticalAngle.current = Math.max(
+                    cameraVerticalAngle.current - 2 * dt,
+                    0
+                );
+            if (keyState.current["ArrowDown"])
+                cameraVerticalAngle.current = Math.min(
+                    cameraVerticalAngle.current + 2 * dt,
+                    Math.PI / 4
+                );
+
             let cameraInside = false;
-            let cameraDistance = 500;
+            let cameraDistance = userCameraDistance.current;
             state.camera.position.set(
                 group.current.position.x -
                     cameraDistance * Math.sin(cameraAngle.current),
                 150 +
                     group.current.position.y +
-                    cameraDistance * Math.sin(Math.PI / 9),
+                    cameraDistance * Math.sin(cameraVerticalAngle.current),
                 group.current.position.z -
                     cameraDistance * Math.cos(cameraAngle.current)
             );
+
             state.camera.lookAt(
                 group.current.position.x,
                 150,
@@ -231,14 +261,16 @@ export const Player: React.FC<PlayerProps> = (props) => {
             const intersect = raycaster.intersectObjects(state.scene.children);
             const intersectDistance = intersect[0]
                 ? intersect[0].distance
-                : 500;
-            cameraDistance = Math.min(intersectDistance, 500);
+                : userCameraDistance.current;
+            cameraDistance =
+                Math.min(intersectDistance, userCameraDistance.current) - 75;
+
             state.camera.position.set(
                 group.current.position.x -
                     cameraDistance * Math.sin(cameraAngle.current),
                 150 +
                     group.current.position.y +
-                    cameraDistance * Math.sin(Math.PI / 9),
+                    cameraDistance * Math.sin(cameraVerticalAngle.current),
                 group.current.position.z -
                     cameraDistance * Math.cos(cameraAngle.current)
             );
