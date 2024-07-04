@@ -60,7 +60,7 @@ export const Player: React.FC<PlayerProps> = (props) => {
     const v = useRef<number>(0);
     const walkingSpeed = useRef<number>(1);
     const [cameraState, setCameraState] = useState<string>("TPS");
-    const cameraAngle = useRef<number>(0);
+    const cameraAngle = useRef<number>(Math.PI);
 
     useEffect(() => {
         actions.Idle?.play();
@@ -194,38 +194,47 @@ export const Player: React.FC<PlayerProps> = (props) => {
         }
 
         if (cameraState == "TPS") {
-            let cameraInside = false;
             let cameraDistance = 500;
-            let count = 0;
-            do {
-                count++;
-                cameraInside = false;
-                state.camera.position.set(
-                    group.current.position.x -
-                        cameraDistance * Math.sin(cameraAngle.current),
-                    150 +
-                        group.current.position.y +
-                        cameraDistance * Math.sin(Math.PI / 9),
-                    group.current.position.z -
-                        cameraDistance * Math.cos(cameraAngle.current)
-                );
-                state.camera.lookAt(
-                    group.current.position.x,
-                    100,
-                    group.current.position.z
-                );
+            state.camera.position.set(
+                group.current.position.x -
+                    cameraDistance * Math.sin(cameraAngle.current),
+                150 +
+                    group.current.position.y +
+                    cameraDistance * Math.sin(Math.PI / 9),
+                group.current.position.z -
+                    cameraDistance * Math.cos(cameraAngle.current)
+            );
+            state.camera.lookAt(
+                group.current.position.x,
+                150,
+                group.current.position.z
+            );
 
-                const boundingBox = new THREE.Box3();
-                state.scene.traverse((object) => {
-                    if (object instanceof THREE.Mesh) {
-                        boundingBox.setFromObject(object);
-                        if (boundingBox.containsPoint(state.camera.position)) {
-                            cameraInside = true;
-                        }
-                    }
-                });
-                cameraDistance -= 30;
-            } while (cameraInside);
+            const direction = new THREE.Vector3();
+            state.camera.getWorldDirection(direction);
+            raycaster.set(
+                new THREE.Vector3(
+                    group.current.position.x,
+                    150,
+                    group.current.position.z
+                ),
+                direction.multiplyScalar(-1)
+            );
+
+            const intersect = raycaster.intersectObjects(state.scene.children);
+            const intersectDistance = intersect[0]
+                ? intersect[0].distance
+                : 500;
+            cameraDistance = Math.min(intersectDistance, 500);
+            state.camera.position.set(
+                group.current.position.x -
+                    cameraDistance * Math.sin(cameraAngle.current),
+                150 +
+                    group.current.position.y +
+                    cameraDistance * Math.sin(Math.PI / 9),
+                group.current.position.z -
+                    cameraDistance * Math.cos(cameraAngle.current)
+            );
         } else if (cameraState == "FPS") {
             state.camera.position.set(
                 group.current.position.x,
