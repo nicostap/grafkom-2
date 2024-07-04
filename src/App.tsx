@@ -18,8 +18,11 @@ import { Player } from "./components/Player";
 import { Clown } from "./components/Clown";
 
 function App() {
-    const { appState } = useAppContext();
-    const [playerPosition, updatePlayerPosition] = useState<[number, number, number]>([0, 0, 0]);
+    const [appState] = useAppContext();
+    const [playerPosition, updatePlayerPosition] = useState<
+        [number, number, number]
+    >([0, 0, 0]);
+    console.log("Render main");
 
     return (
         <Canvas shadows>
@@ -80,7 +83,7 @@ function App() {
                         castShadow
                         updatePosition={updatePlayerPosition}
                     />
-                    <Clown 
+                    <Clown
                         position={[1000, 0, 1000]}
                         scale={[100, 100, 100]}
                         rotation={[0, 0, 0]}

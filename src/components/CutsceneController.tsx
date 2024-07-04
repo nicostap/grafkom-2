@@ -26,7 +26,7 @@ export function CustsceneController() {
     );
     const [cutscene, setCutscene] = useState(0);
 
-    const { appState, setAppState } = useAppContext();
+    const [appState, setAppState] = useAppContext();
 
     useEffect(() => {
         if (cutscene === 0) {
@@ -38,7 +38,7 @@ export function CustsceneController() {
         return () => {
             setAppState({ ...appState, ongoingCutscene: false });
         };
-    }, [cutscene, appState, setAppState]);
+    }, [cutscene]);
 
     useEffect(() => {
         camera.position.copy(startPosition1);

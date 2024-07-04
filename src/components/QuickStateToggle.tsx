@@ -3,25 +3,13 @@ import { useAppContext } from "./AppContext";
 import App from "../App";
 
 export function QuickStateToggle() {
-    const { appState, setAppState } = useAppContext();
+    const [appState, setAppState] = useAppContext();
 
     const onKeyDown = (event: KeyboardEvent) => {
         if (event.key === "\\") {
             setAppState({
                 ...appState,
                 freecamMode: !appState.freecamMode,
-            });
-        }
-        if (event.key === "[") {
-            setAppState({
-                ...appState,
-                ambientLightIntensity: Math.PI / 2,
-            });
-        }
-        if (event.key === "]") {
-            setAppState({
-                ...appState,
-                ambientLightIntensity: Math.PI / 16,
             });
         }
         if (event.key === "1") {
@@ -38,7 +26,7 @@ export function QuickStateToggle() {
     useEffect(() => {
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
-    }, [appState, setAppState]);
+    }, []);
 
     return null;
 }

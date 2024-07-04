@@ -4,33 +4,24 @@ interface AppState {
     ongoingCutscene: boolean;
     freecamMode: boolean;
     currentScene: number;
-    ambientLightIntensity: number;
 }
 
-interface AppStateContext {
-    appState: AppState;
-    setAppState: React.Dispatch<React.SetStateAction<AppState>>;
-}
-
-const AppContext = createContext<AppStateContext>(null!);
+const AppContext = createContext<
+    [AppState, React.Dispatch<React.SetStateAction<AppState>>]
+>(null!);
 
 interface AppContextProps {
     children: React.ReactNode;
 }
 
 export function AppProvider({ children }: AppContextProps) {
-    const [appState, setAppState] = useState<AppState>({
+    const state = useState<AppState>({
         ongoingCutscene: false,
         freecamMode: false,
         currentScene: 1,
-        ambientLightIntensity: Math.PI / 16,
     });
 
-    return (
-        <AppContext.Provider value={{ appState, setAppState }}>
-            {children}
-        </AppContext.Provider>
-    );
+    return <AppContext.Provider value={state}>{children}</AppContext.Provider>;
 }
 
 export function useAppContext() {
